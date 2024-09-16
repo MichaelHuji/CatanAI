@@ -108,10 +108,12 @@ class Game:
         if initialize:
             self.seed = seed if seed is not None else random.randrange(sys.maxsize)
             random.seed(self.seed)
+            # random.seed(2)
 
             self.id = str(uuid.uuid4())
             self.vps_to_win = vps_to_win
             self.state = State(players, catan_map, discard_limit=discard_limit)
+            # random.seed(self.seed)
 
     def play(self, accumulators=[], decide_fn=None):
         """Executes game until a player wins or exceeded TURNS_LIMIT.
@@ -132,6 +134,7 @@ class Game:
             self.play_tick(decide_fn=decide_fn, accumulators=accumulators)
         for accumulator in accumulators:
             accumulator.after(self)
+        # print(f" ~~~~~~~~~~~~~~~~~~~~~~~ \t {self.winning_color()} wins \t ~~~~~~~~~~~~~~~~~~~~~~~ ")
         return self.winning_color()
 
     def play_tick(self, decide_fn=None, accumulators=[]):

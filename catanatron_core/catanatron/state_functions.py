@@ -172,7 +172,7 @@ def build_settlement(state, color, node_id, is_free):
         state.player_state[f"{key}_BRICK_IN_HAND"] -= 1
         state.player_state[f"{key}_SHEEP_IN_HAND"] -= 1
         state.player_state[f"{key}_WHEAT_IN_HAND"] -= 1
-
+        # no replenish bank??
 
 def build_road(state, color, edge, is_free):
     state.buildings_by_color[color][ROAD].append(edge)

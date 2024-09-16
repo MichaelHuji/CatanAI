@@ -280,9 +280,7 @@ def init_adjacent_tiles(
     return adjacent_tiles
 
 
-def init_node_production(
-    adjacent_tiles: Dict[int, List[LandTile]]
-) -> Dict[NodeId, Counter]:
+def init_node_production(adjacent_tiles: Dict[int, List[LandTile]]) -> Dict[NodeId, Counter]:
     """Returns node_id => Counter({WHEAT: 0.123, ...})"""
     node_production = dict()
     for node_id in adjacent_tiles.keys():
@@ -290,9 +288,7 @@ def init_node_production(
     return node_production
 
 
-def get_node_counter_production(
-    adjacent_tiles: Dict[int, List[LandTile]], node_id: NodeId
-):
+def get_node_counter_production(adjacent_tiles: Dict[int, List[LandTile]], node_id: NodeId):
     tiles = adjacent_tiles[node_id]
     production = defaultdict(float)
     for tile in tiles:

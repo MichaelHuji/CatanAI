@@ -39,6 +39,7 @@ from catanatron.models.actions import (
     generate_playable_actions,
     road_building_possibilities,
 )
+
 from catanatron.state_functions import (
     build_city,
     build_road,
