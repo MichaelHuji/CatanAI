@@ -8,22 +8,57 @@ from catanatron.models.player import Player
 from catanatron.game import Game
 from catanatron import Player
 from catanatron_experimental.cli.cli_players import register_player
+#
+# from catanatron_experimental.machine_learning.players.tree_search_utils import (
+#     expand_spectrum,
+#     list_prunned_actions,
+# )
+#
+# from catanatron_experimental.machine_learning.players.value import (
+#     DEFAULT_WEIGHTS,
+#     get_value_fn,
+# )
 
-from catanatron_experimental.machine_learning.players.tree_search_utils import (
-    expand_spectrum,
-    list_prunned_actions,
-)
+# from catanatron_gym.features import (
+#     build_production_features,
+#     reachability_features,
+#     resource_hand_features,
+# )
 
-from catanatron_experimental.machine_learning.players.value import (
-    DEFAULT_WEIGHTS,
-    get_value_fn,
-)
 
-from catanatron_gym.features import (
-    build_production_features,
-    reachability_features,
-    resource_hand_features,
-)
+#
+# @register_player("VPP")
+# class VPPlayer(Player):
+#     """
+#     Player that chooses actions by maximizing Victory Points greedily.
+#     If multiple actions lead to the same max-points-achievable
+#     in this turn, selects from them at random.
+#     """
+#
+#     def decide(self, game: Game, playable_actions):
+#         if len(playable_actions) == 1:
+#             return playable_actions[0]
+#
+#         best_value = float("-inf")
+#         best_actions = []
+#         for action in playable_actions:
+#             game_copy = game.copy()
+#             game_copy.execute(action)
+#
+#             key = player_key(game_copy.state, self.color)
+#             value = game_copy.state.player_state[f"{key}_ACTUAL_VICTORY_POINTS"]
+#             if value == best_value:
+#                 best_actions.append(action)
+#             if value > best_value:
+#                 best_value = value
+#                 best_actions = [action]
+#
+#         return random.choice(best_actions)
+
+
+# XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+# XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+# XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 
 import math
@@ -34,13 +69,145 @@ import numpy as np
 
 from catanatron.game import Game
 from catanatron.models.player import Player
-from catanatron_experimental.machine_learning.players.playouts import run_playout
-from catanatron_experimental.machine_learning.players.tree_search_utils import (
-    execute_spectrum,
-    list_prunned_actions,
-)
+# from catanatron_experimental.machine_learning.players.playouts import run_playout
+# from catanatron_experimental.machine_learning.players.tree_search_utils import (
+#     execute_spectrum,
+#     list_prunned_actions,
+# )
 
 from catanatron_experimental.cli.cli_players import register_player
+
+# @register_player("VPP")
+
+SIMULATIONS = 10
+epsilon = 1e-8
+EXP_C = 2**0.5
+
+
+class StateNode:
+    def __init__(self, color, game, parent, prunning=False):
+        self.level = 0 if parent is None else parent.level + 1
+        self.color = color  # color of player carrying out MCTS
+        self.parent = parent
+        self.game = game  # state
+        self.children = []
+        self.prunning = prunning
+
+        self.wins = 0
+        self.visits = 0
+        self.result = None  # set if terminal
+
+    def run_simulation(self):
+        # select
+        tmp = self
+        tmp.visits += 1
+        while not tmp.is_leaf():
+            tmp = tmp.select()
+            tmp.visits += 1
+
+        if not tmp.is_terminal():
+            # expand
+            tmp.expand()
+            tmp = tmp.select()
+            tmp.visits += 1
+
+            # playout
+            result = tmp.playout()
+        else:
+            result = self.game.winning_color()
+
+        # backpropagate
+        tmp.backpropagate(result == self.color)
+
+    def is_leaf(self):
+        return len(self.children) == 0
+
+    def is_terminal(self):
+        return self.game.winning_color() is not None
+
+    def expand(self):
+        children = defaultdict(list)
+        playable_actions = self.game.state.playable_actions
+        actions = list_prunned_actions(self.game) if self.prunning else playable_actions
+        for action in actions:
+            outcomes = execute_spectrum(self.game, action)
+            for state, proba in outcomes:
+                children[action].append(
+                    (StateNode(self.color, state, self, self.prunning), proba)
+                )
+        self.children = children
+
+    def select(self):
+        """select a child StateNode"""
+        action = self.choose_best_action()
+
+        # Idea: Allow randomness to guide to next children too
+        children = self.children[action]
+        children_states = list(map(lambda c: c[0], children))
+        children_probas = list(map(lambda c: c[1], children))
+        return np.random.choice(children_states, 1, p=children_probas)[0]
+
+    def choose_best_action(self):
+        scores = []
+        for action in self.game.state.playable_actions:
+            score = self.action_children_expected_score(action)
+            scores.append(score)
+
+        idx = max(range(len(scores)), key=lambda i: scores[i])
+        action = self.game.state.playable_actions[idx]
+        return action
+
+    def action_children_expected_score(self, action):
+        score = 0
+        for child, proba in self.children[action]:
+            score += proba * (
+                child.wins / (child.visits + epsilon)
+                + EXP_C
+                * (math.log(self.visits + epsilon) / (child.visits + epsilon)) ** 0.5
+            )
+        return score
+
+    def playout(self):
+        return run_playout(self.game)
+
+    def backpropagate(self, value):
+        self.wins += value
+
+        tmp = self
+        while tmp.parent is not None:
+            tmp = tmp.parent
+
+            tmp.wins += value
+
+# @register_player("M")
+# class MCTSPlayer(Player):
+#     def __init__(self, color, num_simulations=SIMULATIONS, prunning=False):
+#         super().__init__(color)
+#         self.num_simulations = int(num_simulations)
+#         self.prunning = bool(prunning)
+#
+#     def decide(self, game: Game, playable_actions):
+#         # if len(game.state.actions) > 10:
+#         #     import sys
+#
+#         #     sys.exit(1)
+#         actions = list_prunned_actions(game) if self.prunning else playable_actions
+#         if len(actions) == 1:
+#             return actions[0]
+#
+#         start = time.time()
+#         root = StateNode(self.color, game.copy(), None, self.prunning)
+#         for _ in range(self.num_simulations):
+#             root.run_simulation()
+#
+#         # print(
+#         #     f"{str(self)} took {time.time() - start} secs to decide {len(playable_actions)}"
+#         # )
+#
+#         return root.choose_best_action()
+#
+#     def __repr__(self):
+#         return super().__repr__() + f"({self.num_simulations}:{self.prunning})"
 
 import gymnasium as gym
 from gymnasium import spaces
@@ -796,6 +963,37 @@ def generate_x(game, p0_color):
     state = game.state
     board = state.board
     player_state = state.player_state
+    # # we will later add port features for each node
+    # X = np.zeros(648)
+    # for i in range(54):
+    #
+    #     if i in get_player_buildings(state, p0_color, SETTLEMENT):
+    #         X[12 * i] = 1
+    #     elif i in get_player_buildings(state, p1_color, SETTLEMENT):
+    #         X[12 * i] = -1
+    #
+    #     for j, resource in enumerate(RESOURCES):
+    #         entry_index = 12*i + j + 1
+    #         X[entry_index] = get_node_production(game.state.board.map, i, resource)
+    #
+    # return X
+
+
+    # p0_buildings = get_player_buildings(state, p0_color, SETTLEMENT)
+    # p1_buildings = get_player_buildings(state, p1_color, SETTLEMENT)
+    #
+    # X = np.zeros(324)
+    # for i in range(54):
+    #
+    #     if i in p0_buildings:
+    #         X[6 * i] = 1
+    #     elif i in p1_buildings:
+    #         X[6 * i] = -1
+    #
+    #     for j, resource in enumerate(RESOURCES):
+    #         X[(6 * i) + (j + 1)] = get_node_production(game.state.board.map, i, resource)
+    #
+    # return X
 
     p0_settle = get_player_buildings(state, p0_color, SETTLEMENT)
     p1_settle = get_player_buildings(state, p1_color, SETTLEMENT)
@@ -863,6 +1061,13 @@ def get_node_production(catan_map, node_id, resource):
 
     return production
 
+    # tiles = catan_map.adjacent_tiles[node_id]
+    # return sum([number_probability(t.number) for t in tiles if t.resource == resource])
+
+
+# from catanatron_gym.envs.catanatron_env import generate_x
+# from LearnModel2 import Net
+
 class Net(nn.Module):
     def __init__(self, input_size=363):
         super(Net, self).__init__()
@@ -890,7 +1095,6 @@ class Net(nn.Module):
         x = self.sigmoid(self.output(x))
         return x
 
-
 @register_player("NN")
 class MyNNPlayer(Player):
     """
@@ -916,16 +1120,12 @@ class MyNNPlayer(Player):
 
         # self.model.load_state_dict(torch.load(f'FvF_all_129K_363feat_model_weights_epoch39.pth'))
 
-        # NN1
         # self.model.load_state_dict(torch.load(f'363_64_32_16_1_FvF_all_129K_363feat_model_weights_epoch29.pth'))
 
-        # NN2
-        # self.model.load_state_dict(torch.load(f'NN2vNN2_47K_b16_lr005_model_weights_epoch19.pth'))
+        self.model.load_state_dict(torch.load(f'363_64_32_16_1_FvF_all_129K_363feat_model_weights_epoch29.pth'))
+        # self.model.load_state_dict(torch.load(f'FvF_all_129K_363feat_model_weights_epoch47.pth'))
 
-        # NN3
-        self.model.load_state_dict(torch.load(f'NN3vNN3_114K_b8_lr0002_model_weights_epoch20.pth'))
 
-        self.model.eval()
 
     def decide(self, game: Game, playable_actions):
         if len(playable_actions) == 1:
@@ -950,68 +1150,7 @@ class MyNNPlayer(Player):
         return random.choice(best_actions)
 
 
-@register_player("NN2")
-class MyNN2Player(Player):
-    """
-    Player that chooses actions by maximizing Victory Points greedily.
-    If multiple actions lead to the same max-points-achievable
-    in this turn, selects from them at random.
-    """
 
-    def __init__(self, color, value_fn_builder_name=None, params=None, is_bot=True, epsilon=None):
-        super().__init__(color, is_bot)
-        # self.model = torch.load('FvF_66K_363feat_model.pth')
-        #
-        # # Make sure to call model.eval() if you're in inference mode
-        self.model = Net()
-
-
-    # Load the state_dict
-
-        # torch.save(model.state_dict(), )
-        # self.model.load_state_dict(torch.load('FvF_22VP_114K_363feat_model_weights.pth'))
-        # self.model.load_state_dict(torch.load('FvF_turn_20_114K_363feat_model_weights.pth'))
-
-
-        # self.model.load_state_dict(torch.load(f'FvF_all_129K_363feat_model_weights_epoch39.pth'))
-
-        # self.model.load_state_dict(torch.load(f'363_64_32_16_1_FvF_all_129K_363feat_model_weights_epoch29.pth'))
-
-        # NN1
-        # self.model.load_state_dict(torch.load(f'363_64_32_16_1_FvF_all_129K_363feat_model_weights_epoch29.pth'))
-
-        # NN2
-        self.model.load_state_dict(torch.load(f'NN2vNN2_47K_b16_lr005_model_weights_epoch19.pth'))
-
-        # NN3
-        # self.model.load_state_dict(torch.load(f'NN3vNN3_114K_b8_lr0002_model_weights_epoch20.pth'))
-
-        self.model.eval()
-
-    def decide(self, game: Game, playable_actions):
-        if len(playable_actions) == 1:
-            return playable_actions[0]
-
-        best_value = float("-inf")
-        best_actions = []
-        for action in playable_actions:
-            game_copy = game.copy()
-            game_copy.execute(action)
-
-            action_vector = generate_x(game_copy, self.color)
-
-            # key = player_key(game_copy.state, self.color)
-            action_value = self.model(torch.tensor(action_vector, dtype=torch.float32))
-            if action_value == best_value:
-                best_actions.append(action)
-            if action_value > best_value:
-                best_value = action_value
-                best_actions = [action]
-
-        return random.choice(best_actions)
-
-
-#
 #
 # ALPHABETA_DEFAULT_DEPTH = 2
 # MAX_SEARCH_TIME_SECS = 20

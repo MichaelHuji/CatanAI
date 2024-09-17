@@ -53,6 +53,7 @@ def train_model(model, train_loader, test_loader, criterion, optimizer, epochs):
             loss = criterion(outputs, labels)  # Compute loss
             loss.backward()  # Backward pass (compute gradients)
             optimizer.step()  # Update weights
+            # TODO change the threshold to be about the median point
             thrshold = 0.5
             outputs[outputs >= thrshold] = 1
             outputs[outputs < thrshold] = 0
@@ -73,14 +74,15 @@ def train_model(model, train_loader, test_loader, criterion, optimizer, epochs):
                 outputs = model(inputs)
                 test_size += len(labels)
                 # loss = criterion(outputs, labels)
+                #TODO change the threshold to be about the median point
                 thrshold = 0.5
                 outputs[outputs >= thrshold] = 1
                 outputs[outputs < thrshold] = 0
                 test_loss += torch.sum(torch.abs(outputs - labels)).item()
         print(f"Epoch [{epoch + 1}/{epochs}], Validation Loss: {test_loss / test_size}, test size: {test_size}")
-        test_losses.append(test_loss / test_size)
+        test_losses.append(test_loss / 65850)
 
-        torch.save(model.state_dict(), f'NN3vNN3_114K_b8_lr0002_model_weights_epoch{epoch+1}.pth')
+        torch.save(model.state_dict(), f'363_64_32_16_1_FvF_all_129K_363feat_model_weights_epoch{epoch}.pth')
 
     # print(f"num_over_half_list : {(num_over_half_list)}")
     return train_losses, test_losses
@@ -117,23 +119,15 @@ def train_and_evaluate(model_class, X, Y, test_size=0.2, epochs=10, batch_size=3
 
     # Initialize the model, optimizer, and loss function
     model = model_class()
-
-    # load pre-trained weights
-    # model.load_state_dict(torch.load(f'363_64_32_16_1_FvF_all_129K_363feat_model_weights_epoch29.pth'))
-    model.load_state_dict(torch.load(f'NN2vNN2_47K_b16_lr001_model_weights_epoch12.pth'))
-
-    # f'NN2vNN2_47K_b16_lr001_model_weights_epoch12.pth'
-
     # optimizer = optim.Adam(model.parameters(), lr=learning_rate)
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.0002, weight_decay=1e-5)
-    # TODO: add scheduler for learning rate
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=1e-5)
     criterion = nn.BCELoss()  # Binary Cross-Entropy Loss
 
     # Train the model
     train_losses, test_losses = train_model(model, train_loader, test_loader, criterion, optimizer, epochs)
 
     # Evaluate the model on the test set (validation loss)
-    # test_loss = evaluate_model(model, test_loader, criterion)
+    test_loss = evaluate_model(model, test_loader, criterion)
     # print(f"Test/Validation Loss: {test_loss}")
     # torch.save(model, 'FvF_all_129K_363feat_model.pth')
     # torch.save(model.state_dict(), 'FvF_all_129K_363feat_model_weights.pth')
@@ -154,7 +148,7 @@ def plot_losses(train_losses, validation_losses):
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
     # plt.title('Training and Validation Loss')
-    plt.title(f'NN3vNN3_114K, test=0.1, \nbatch=16, lr=0.0002, wght_dec=1e-5')
+    plt.title(f'FvF_all_129K_363feat, test=0.1, \nbatch=8, lr=0.001, wght_dec=1e-5')
 
     plt.legend()
     plt.show()
@@ -218,41 +212,15 @@ def plot_losses(train_losses, validation_losses):
 # X_data4, Y_data4 = load_numpy_data(f"game_simulation_data/FvF_turn_20_{episodes}games_363features.npz")
 
 # episodes=50000
-# X_data, Y_data = load_numpy_data(f"game_simulation_data/WvW_1_50000games_363features.npz")
-# X_data1, Y_data1 = load_numpy_data(f"game_simulation_data/WvW_22_50000games_363features.npz")
-# X_data2, Y_data2 = load_numpy_data(f"game_simulation_data/WvW_turn_10_50000games_363features.npz")
-# X_data3, Y_data3 = load_numpy_data(f"game_simulation_data/WvW_turn_20_50000games_363features.npz")
+X_data, Y_data = load_numpy_data(f"game_simulation_data/WvW_1_50000games_363features.npz")
+X_data1, Y_data1 = load_numpy_data(f"game_simulation_data/WvW_22_50000games_363features.npz")
+X_data2, Y_data2 = load_numpy_data(f"game_simulation_data/WvW_turn_10_50000games_363features.npz")
+X_data3, Y_data3 = load_numpy_data(f"game_simulation_data/WvW_turn_20_50000games_363features.npz")
 
-# episodes=5000
-# X_data, Y_data = load_numpy_data(f"game_simulation_data/NN1vNN1_1_{episodes}games_363features.npz")
-# X_data1, Y_data1 = load_numpy_data(f"game_simulation_data/NN1vNN1_2_{episodes}games_363features.npz")
-# X_data2, Y_data2 = load_numpy_data(f"game_simulation_data/NN1vNN1_22_{episodes}games_363features.npz")
-# X_data3, Y_data3 = load_numpy_data(f"game_simulation_data/NN1vNN1_turn_10_{episodes}games_363features.npz")
-# X_data4, Y_data4 = load_numpy_data(f"game_simulation_data/NN1vNN1_turn_20_{episodes}games_363features.npz")
-# X_data5, Y_data5 = load_numpy_data(f"game_simulation_data/NN1vNN1_turn_30_{episodes}games_363features.npz")
+X_data = np.concatenate((X_data, X_data1, X_data2, X_data3), axis=0)
+Y_data = np.concatenate((Y_data, Y_data1, Y_data2, Y_data3))
 
 
-X_data, Y_data = load_numpy_data(f"game_simulation_data/FvF_1_114000games_363features.npz")
-X_data1, Y_data1 = load_numpy_data(f"game_simulation_data/FvF_2_114000games_363features.npz")
-X_data2, Y_data2 = load_numpy_data(f"game_simulation_data/FvF_22_114000games_363features.npz")
-X_data3, Y_data3 = load_numpy_data(f"game_simulation_data/FvF_turn_10_114000games_363features.npz")
-X_data4, Y_data4 = load_numpy_data(f"game_simulation_data/FvF_turn_20_114000games_363features.npz")
-
-X_data = np.concatenate((X_data, X_data1, X_data2, X_data3, X_data4), axis=0)
-Y_data = np.concatenate((Y_data, Y_data1, Y_data2, Y_data3, Y_data4))
-#
-# episodes=42000
-# X_data0, Y_data0 = load_numpy_data(f"game_simulation_data/NN1vNN1_1_{episodes}games_363features.npz")
-# X_data1, Y_data1 = load_numpy_data(f"game_simulation_data/NN1vNN1_2_{episodes}games_363features.npz")
-# X_data2, Y_data2 = load_numpy_data(f"game_simulation_data/NN1vNN1_22_{episodes}games_363features.npz")
-# X_data3, Y_data3 = load_numpy_data(f"game_simulation_data/NN1vNN1_turn_10_{episodes}games_363features.npz")
-# X_data4, Y_data4 = load_numpy_data(f"game_simulation_data/NN1vNN1_turn_20_{episodes}games_363features.npz")
-# X_data5, Y_data5 = load_numpy_data(f"game_simulation_data/NN1vNN1_turn_30_{episodes}games_363features.npz")
-#
-# X_data = np.concatenate((X_data, X_data1, X_data2, X_data3, X_data4, X_data5, X_data0), axis=0)
-# Y_data = np.concatenate((Y_data, Y_data1, Y_data2, Y_data3, Y_data4, Y_data5, Y_data0))
-#
-#
 
 # X_data = np.concatenate((X_data, X_data1, X_data2, X_data3, X_data4, X_data5), axis=0)
 # Y_data = np.concatenate((Y_data, Y_data1, Y_data2, Y_data3, Y_data4, Y_data5))
@@ -264,7 +232,7 @@ Y_data[Y_data == -1] = 0
 #
 #
 # # Train and evaluate the model using 80% for training and 20% for testing
-train_losses, test_losses = train_and_evaluate(Net, X_data, Y_data, test_size=0.25, epochs=20, batch_size=8)
+train_losses, test_losses = train_and_evaluate(Net, X_data, Y_data, test_size=0.1, epochs=30, batch_size=32)
 
 plot_losses(train_losses, test_losses)
 # Function to plot the training and validation loss

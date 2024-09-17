@@ -133,9 +133,9 @@ class MCTSPlayer(Player):
         for _ in range(self.num_simulations):
             root.run_simulation()
 
-        print(
-            f"{str(self)} took {time.time() - start} secs to decide {len(playable_actions)}"
-        )
+        # print(
+        #     f"{str(self)} took {time.time() - start} secs to decide {len(playable_actions)}"
+        # )
 
         return root.choose_best_action()
 

@@ -107,38 +107,38 @@ class WeightedRandomPlayer(Player):
     to actions that are likely better (cities > settlements > dev cards).
     """
 
-    # def decide(self, game, playable_actions):
-    #
-    #     bloated_actions = []
-    #     for action in playable_actions:
-    #         weight = WEIGHTS_BY_ACTION_TYPE.get(action.action_type, 1)
-    #         bloated_actions.extend([action] * weight)
-    #
-    #     return random.choice(bloated_actions)
-
     def decide(self, game, playable_actions):
 
-        if len(playable_actions) == 1:
-            return playable_actions[0]
-
-        best_value = float("-inf")
-        best_actions = []
+        bloated_actions = []
         for action in playable_actions:
-            game_copy = game.copy()
-            if isinstance(action, int):
-                catan_action = from_action_space(action, game.state.playable_actions)
-                game_copy.execute(catan_action)
+            weight = WEIGHTS_BY_ACTION_TYPE.get(action.action_type, 1)
+            bloated_actions.extend([action] * weight)
 
-            else:
-                game_copy.execute(action)
+        return random.choice(bloated_actions)
 
-            key = player_key(game_copy.state, self.color)
-            value = game_copy.state.player_state[f"{key}_ACTUAL_VICTORY_POINTS"]
-            if value == best_value:
-                best_actions.append(action)
-            if value > best_value:
-                best_value = value
-                best_actions = [action]
+    # def decide(self, game, playable_actions):
+    #
+    #     if len(playable_actions) == 1:
+    #         return playable_actions[0]
+    #
+    #     best_value = float("-inf")
+    #     best_actions = []
+    #     for action in playable_actions:
+    #         game_copy = game.copy()
+    #         if isinstance(action, int):
+    #             catan_action = from_action_space(action, game.state.playable_actions)
+    #             game_copy.execute(catan_action)
+    #
+    #         else:
+    #             game_copy.execute(action)
+    #
+    #         key = player_key(game_copy.state, self.color)
+    #         value = game_copy.state.player_state[f"{key}_ACTUAL_VICTORY_POINTS"]
+    #         if value == best_value:
+    #             best_actions.append(action)
+    #         if value > best_value:
+    #             best_value = value
+    #             best_actions = [action]
 
         bloated_actions = []
         for action in best_actions:

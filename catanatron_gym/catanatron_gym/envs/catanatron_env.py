@@ -1,6 +1,27 @@
+import random
+
 import gymnasium as gym
+import torch
 from gymnasium import spaces
 import numpy as np
+
+from catanatron.models.board import get_edges
+from catanatron.models.map import NUM_NODES, LandTile, BASE_MAP_TEMPLATE
+from catanatron.state_functions import (
+    get_longest_road_length,
+    get_played_dev_cards,
+    player_key,
+    player_num_dev_cards,
+    player_num_resource_cards,
+)
+from catanatron.models.player import Player
+from catanatron.models.enums import RESOURCES, SETTLEMENT, CITY, Action, ActionType
+# from catanatron_gym.envs.catanatron_env import from_action_space
+from catanatron_gym.features import (
+    build_production_features,
+    reachability_features,
+    resource_hand_features,
+)
 
 #   vvv   Michael's imports for reward function   vvv
 from collections import defaultdict
@@ -75,6 +96,13 @@ from catanatron.models.enums import RESOURCES, Action, ActionType
 from catanatron.models.board import get_edges, Board
 from catanatron.state_functions import player_key, player_has_rolled
 from catanatron_experimental.machine_learning.players.value import ValueFunctionPlayer
+from catanatron_experimental.machine_learning.players.minimax import AlphaBetaPlayer
+#
+# from MichaelFiles.myplayers import MyNNPlayer
+# from MichaelFiles.myplayers import generate_x
+
+
+
 from catanatron_gym.features import (
     create_sample,
     get_feature_ordering,
@@ -88,6 +116,7 @@ from catanatron_gym.board_tensor_features import (
 from catanatron.game import Game
 from catanatron.models.map import number_probability
 
+# from catanatron.catanatron_experimental.catanatron_experimental.machine_learning.players.minimax import AlphaBetaPlayer
 
 BASE_TOPOLOGY = BASE_MAP_TEMPLATE.topology
 TILE_COORDINATES = [x for x, y in BASE_TOPOLOGY.items() if y == LandTile]
@@ -647,6 +676,95 @@ def calculate_resource_production_value_for_player(state, p0_color):
     return production_value
 
 
+
+import torch.nn as nn
+
+class Net(nn.Module):
+    def __init__(self, input_size=363):
+        super(Net, self).__init__()
+        self.fc1 = nn.Linear(input_size, 128)
+        self.fc2 = nn.Linear(128, 64)
+        self.output = nn.Linear(64, 1)
+
+        # self.fc1 = nn.Linear(input_size, 64)
+        # self.fc2 = nn.Linear(64, 32)
+        # self.output = nn.Linear(32, 1)
+
+        self.fc1 = nn.Linear(input_size, 64)
+        self.fc2 = nn.Linear(64, 32)
+        self.fc3 = nn.Linear(32, 16)
+        self.output = nn.Linear(16, 1)
+
+        self.sigmoid = nn.Sigmoid()
+        self.dropout = nn.Dropout(0.5)  # Optional dropout for regularization
+
+    def forward(self, x):
+        x = torch.relu(self.fc1(x))
+        x = self.dropout(x)
+        x = torch.relu(self.fc2(x))
+        x = torch.relu(self.fc3(x))
+        x = self.sigmoid(self.output(x))
+        return x
+
+class MyEnvNNPlayer(Player):
+    """
+    Player that chooses actions by maximizing Victory Points greedily.
+    If multiple actions lead to the same max-points-achievable
+    in this turn, selects from them at random.
+    """
+
+    def __init__(self, color, value_fn_builder_name=None, params=None, is_bot=True, epsilon=None):
+        super().__init__(color, is_bot)
+        # self.model = torch.load('FvF_66K_363feat_model.pth')
+        #
+        # # Make sure to call model.eval() if you're in inference mode
+        # self.model.eval()
+        self.model = Net()
+
+        # Load the state_dict
+
+        # torch.save(model.state_dict(), )
+        # self.model.load_state_dict(torch.load('FvF_22VP_114K_363feat_model_weights.pth'))
+        # self.model.load_state_dict(torch.load('FvF_turn_20_114K_363feat_model_weights.pth'))
+
+
+        # self.model.load_state_dict(torch.load(f'FvF_all_129K_363feat_model_weights_epoch39.pth'))
+
+        # self.model.load_state_dict(torch.load(f'363_64_32_16_1_FvF_all_129K_363feat_model_weights_epoch29.pth'))
+
+        self.model.load_state_dict(torch.load(f'363_64_32_16_1_FvF_all_129K_363feat_model_weights_epoch29.pth'))
+        # self.model.load_state_dict(torch.load(f'FvF_all_129K_363feat_model_weights_epoch47.pth'))
+
+
+
+    def decide(self, game: Game, playable_actions):
+        if len(playable_actions) == 1:
+            return playable_actions[0]
+
+        best_value = float("-inf")
+        best_actions = []
+        for action in playable_actions:
+            game_copy = game.copy()
+            if isinstance(action, int):
+                catan_action = from_action_space(action, game.state.playable_actions)
+                game_copy.execute(catan_action)
+
+            else:
+                game_copy.execute(action)
+
+            action_vector = generate_x(game_copy, self.color)
+
+            # key = player_key(game_copy.state, self.color)
+            action_value = self.model(torch.tensor(action_vector, dtype=torch.float32))
+            if action_value == best_value:
+                best_actions.append(action)
+            if action_value > best_value:
+                best_value = action_value
+                best_actions = [action]
+
+        return random.choice(best_actions)
+
+
 class CatanatronEnv(gym.Env):
     metadata = {"render_modes": []}
 
@@ -663,7 +781,11 @@ class CatanatronEnv(gym.Env):
         self.vps_to_win = self.config.get("vps_to_win", 10)
         # self.enemies = self.config.get("enemies", [RandomPlayer(Color.RED)])
         # self.enemies = self.config.get("enemies", [WeightedRandomPlayer(Color.RED)])
-        self.enemies = self.config.get("enemies", [ValueFunctionPlayer(Color.RED)])
+
+        # self.enemies = self.config.get("enemies", [ValueFunctionPlayer(Color.RED)])
+        # self.enemies = self.config.get("enemies", [MyEnvNNPlayer(Color.RED)])
+
+        self.enemies = self.config.get("enemies", [AlphaBetaPlayer(Color.RED)])
         self.X_1VP = 0
         self.X_2VP = 0
         self.X_11VP = 0
@@ -723,7 +845,11 @@ class CatanatronEnv(gym.Env):
 
     def step(self, action):
         try:
-            catan_action = from_action_space(action, self.game.state.playable_actions)
+            if isinstance(action, int):
+                catan_action = from_action_space(action, self.game.state.playable_actions)
+            else:
+                catan_action = action
+            # catan_action = from_action_space(action, self.game.state.playable_actions)
         except Exception as e:
             self.invalid_actions_count += 1
 
@@ -738,14 +864,21 @@ class CatanatronEnv(gym.Env):
                 self.invalid_actions_count > self.max_invalid_actions
                 or self.game.state.num_turns >= TURNS_LIMIT
             )
+
+            y = 0
+            if winning_color == Color.BLUE:
+                y = 1
+            elif winning_color == Color.RED:
+                y = -1
+
             info = dict(valid_actions=self.get_valid_actions())
-            # info['x1'] = 0
-            # info['x2'] = 0
-            # info['x22'] = 0
-            # info['turn_10'] = 0
-            # info['turn_20'] = 0
-            # info['turn_30'] = 0
-            # info['y'] = 0
+            info['x1'] = self.X_1VP
+            info['x2'] = self.X_2VP
+            info['x22'] = self.X_22VP
+            info['turn_10'] = self.x_turn[10]
+            info['turn_20'] = self.x_turn[20]
+            info['turn_30'] = self.x_turn[30]
+            info['y'] = y
             return observation, self.invalid_action_reward, terminated, truncated, info
 
 
@@ -772,13 +905,13 @@ class CatanatronEnv(gym.Env):
             self.X_22VP = generate_x(self.game, self.p0.color)
             self.got_X_22VP = True
 
-        if (isinstance(self.x_turn[10], int)) and (self.game.state.num_turns >= 5 and self.game.state.num_turns < 15):
+        if (isinstance(self.x_turn[10], int)) and (self.game.state.num_turns >= 5 and self.game.state.num_turns < 14):
             self.x_turn[10] = generate_x(self.game, self.p0.color)
 
-        if (isinstance(self.x_turn[20], int)) and (self.game.state.num_turns >= 15 and self.game.state.num_turns < 25):
+        if (isinstance(self.x_turn[20], int)) and (self.game.state.num_turns >= 14 and self.game.state.num_turns < 21):
             self.x_turn[20] = generate_x(self.game, self.p0.color)
 
-        if (isinstance(self.x_turn[30], int)) and (self.game.state.num_turns >= 25):
+        if (isinstance(self.x_turn[30], int)) and (self.game.state.num_turns >= 22):
             self.x_turn[30] = generate_x(self.game, self.p0.color)
 
         observation = self._get_observation()

@@ -12,6 +12,7 @@ from catanatron_experimental.machine_learning.players.value import (
     DEFAULT_WEIGHTS,
     get_value_fn,
 )
+# from catanatron.myplayers import simple_reward
 
 
 ALPHABETA_DEFAULT_DEPTH = 2
