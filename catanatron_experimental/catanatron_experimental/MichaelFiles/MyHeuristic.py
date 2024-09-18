@@ -1,7 +1,7 @@
 import random
 from catanatron.game import Game
 from catanatron import Player
-from catanatron_experimental.cli.cli_players import register_player
+# from catanatron_experimental.cli.cli_players import register_player
 from catanatron_experimental.MichaelFiles.HeuristicFeatures import simple_reward
 
 from catanatron_gym.envs.catanatron_env import from_action_space

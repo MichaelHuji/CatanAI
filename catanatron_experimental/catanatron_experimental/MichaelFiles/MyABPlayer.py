@@ -4,14 +4,14 @@ from typing import Any
 from catanatron import Player
 from catanatron.game import Game
 from catanatron_experimental.MichaelFiles.HeuristicFeatures import simple_reward
-from catanatron_experimental.cli.cli_players import register_player
+# from catanatron_experimental.cli.cli_players import register_player
 from catanatron_experimental.machine_learning.players.tree_search_utils import expand_spectrum, list_prunned_actions
 
 
 ALPHABETA_DEFAULT_DEPTH = 2
 MAX_SEARCH_TIME_SECS = 20
 
-@register_player("MYAB")
+# @register_player("MYAB")
 class MyABPlayer(Player):
     """
     Player that executes an AlphaBeta Search where the value of each node

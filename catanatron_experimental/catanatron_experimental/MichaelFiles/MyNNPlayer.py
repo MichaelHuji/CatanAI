@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 from catanatron.game import Game
 from catanatron import Player
-from catanatron_experimental.cli.cli_players import register_player
+# from catanatron_experimental.cli.cli_players import register_player
 from catanatron_experimental.MichaelFiles.Net import Net
 from catanatron_experimental.MichaelFiles.Features import generate_x
 from catanatron_experimental.MichaelFiles.ActionsSpace import from_action_space
@@ -11,7 +11,7 @@ from catanatron_experimental.MichaelFiles.ActionsSpace import from_action_space
 # best_weights = f'NN2vNN2_47K_b16_lr005_model_weights_epoch19.pth'
 DEFAULT_WEIGHT='FvF_all_129K_363feat_model_weights_epoch39.pth'
 
-# @register_player("NNN")
+# @register_player("NN")
 class MyNNPlayer(Player):
     """Simple AI player that always takes the first action in the list of playable_actions"""
 

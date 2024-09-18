@@ -26,6 +26,17 @@ from catanatron_experimental.machine_learning.players.playouts import (
     GreedyPlayoutsPlayer,
 )
 
+# ............. below import added by michael ..................
+
+from catanatron_experimental.MichaelFiles.MyHeuristic import MyVFPlayer
+
+from catanatron_experimental.MichaelFiles.MyNNPlayer import MyNNPlayer
+
+from catanatron_experimental.MichaelFiles.MyABPlayer import MyABPlayer
+
+
+# ............. above import added by michael ..................
+
 # from catanatron_experimental.machine_learning.players.online_mcts_dqn import (
 #     OnlineMCTSDQNPlayer,
 # )
@@ -94,6 +105,24 @@ CLI_PLAYERS = [
         "SameTurnAlphaBetaPlayer",
         "AlphaBeta but searches only within turn",
         SameTurnAlphaBetaPlayer,
+    ),
+    CliPlayer(
+        "MYVF",
+        "HeuristicPlayer",
+        "calculates values for state using hand crafted features and weights",
+        MyVFPlayer,
+    ),
+    CliPlayer(
+        "NN",
+        "NeuralNetworkPlayer",
+        "calculates values for state using a nn",
+        MyNNPlayer,
+    ),
+    CliPlayer(
+        "MYAB",
+        "AlphaBetaPlayer with hand crafted features and weights",
+        "like MYVF but looks deeper",
+        MyABPlayer,
     ),
 ]
 

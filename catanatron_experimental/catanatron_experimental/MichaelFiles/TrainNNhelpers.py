@@ -23,6 +23,12 @@ def plot_losses(trn_los, val_los, plrs="FvF", gms=114000, tst=0.1, btch=16, lr=0
 
 
 def combine_datasets(players="FvF", games=114000):
+
+    # X_data0, Y_data0 = load_numpy_data(f"game_simulation_data/WvW_1_99000games_364features.npz")
+    # X_data1, Y_data1 = load_numpy_data(f"game_simulation_data/WvW_2_99000games_364features.npz")
+    # X_data2, Y_data2 = load_numpy_data(f"game_simulation_data/WvW_22_99000games_364features.npz")
+    # X_data3, Y_data3 = load_numpy_data(f"game_simulation_data/WvW_turn_10_99000games_364features.npz")
+    # X_data4, Y_data4 = load_numpy_data(f"game_simulation_data/WvW_turn_20_99000games_364features.npz")
     X_data0, Y_data0 = load_numpy_data(f"game_simulation_data/{players}_1_{games}games_363features.npz")
     X_data1, Y_data1 = load_numpy_data(f"game_simulation_data/{players}_2_{games}games_363features.npz")
     X_data2, Y_data2 = load_numpy_data(f"game_simulation_data/{players}_22_{games}games_363features.npz")
@@ -33,5 +39,13 @@ def combine_datasets(players="FvF", games=114000):
     Y_data = np.concatenate((Y_data0, Y_data1, Y_data2, Y_data3, Y_data4))
 
     Y_data[Y_data == -1] = 0
+
+    return X_data, Y_data
+
+
+def combine_two_datasets(X_data1, Y_data1, X_data2, Y_data2):
+
+    X_data = np.concatenate((X_data1, X_data2), axis=0)
+    Y_data = np.concatenate((Y_data1, Y_data2))
 
     return X_data, Y_data
