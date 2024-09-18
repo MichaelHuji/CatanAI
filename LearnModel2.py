@@ -97,67 +97,26 @@ def evaluate_model(model, test_loader, criterion):
     return test_loss
 
 
-# Example: Splitting the data into train and test sets, training, and evaluating
-def train_and_evaluate(model_class, X, Y, test_size=0.2, epochs=10, batch_size=32, learning_rate=0.001):
 
-    # Split the data into training and testing sets
-    X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=test_size, random_state=42)
-
-    # Convert data to PyTorch tensors
-    X_train = torch.tensor(X_train, dtype=torch.float32)
-    Y_train = torch.tensor(Y_train, dtype=torch.float32).view(-1, 1)
-    X_test = torch.tensor(X_test, dtype=torch.float32)
-    Y_test = torch.tensor(Y_test, dtype=torch.float32).view(-1, 1)
-
-    # Create DataLoaders for training and testing
-    train_loader = torch.utils.data.DataLoader(
-        torch.utils.data.TensorDataset(X_train, Y_train), batch_size=batch_size, shuffle=True)
-    test_loader = torch.utils.data.DataLoader(
-        torch.utils.data.TensorDataset(X_test, Y_test), batch_size=batch_size, shuffle=False)
-
-    # Initialize the model, optimizer, and loss function
-    model = model_class()
-
-    # load pre-trained weights
-    # model.load_state_dict(torch.load(f'363_64_32_16_1_FvF_all_129K_363feat_model_weights_epoch29.pth'))
-    model.load_state_dict(torch.load(f'NN2vNN2_47K_b16_lr001_model_weights_epoch12.pth'))
-
-    # f'NN2vNN2_47K_b16_lr001_model_weights_epoch12.pth'
-
-    # optimizer = optim.Adam(model.parameters(), lr=learning_rate)
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.0002, weight_decay=1e-5)
-    # TODO: add scheduler for learning rate
-    criterion = nn.BCELoss()  # Binary Cross-Entropy Loss
-
-    # Train the model
-    train_losses, test_losses = train_model(model, train_loader, test_loader, criterion, optimizer, epochs)
-
-    # Evaluate the model on the test set (validation loss)
-    # test_loss = evaluate_model(model, test_loader, criterion)
-    # print(f"Test/Validation Loss: {test_loss}")
-    # torch.save(model, 'FvF_all_129K_363feat_model.pth')
-    # torch.save(model.state_dict(), 'FvF_all_129K_363feat_model_weights.pth')
-
-    return train_losses, test_losses
-
-def load_numpy_data(filename):
-    data = np.load(filename)
-    X = data['X']
-    Y = data['Y']
-    return X, Y
-
-
-def plot_losses(train_losses, validation_losses):
-    epochs = range(1, len(train_losses) + 1)
-    plt.plot(epochs, train_losses, label='Train Loss')
-    plt.plot(epochs, validation_losses, label='Validation Loss')
-    plt.xlabel('Epochs')
-    plt.ylabel('Loss')
-    # plt.title('Training and Validation Loss')
-    plt.title(f'NN3vNN3_114K, test=0.1, \nbatch=16, lr=0.0002, wght_dec=1e-5')
-
-    plt.legend()
-    plt.show()
+#
+# def load_numpy_data(filename):
+#     data = np.load(filename)
+#     X = data['X']
+#     Y = data['Y']
+#     return X, Y
+#
+#
+# def plot_losses(train_losses, validation_losses):
+#     epochs = range(1, len(train_losses) + 1)
+#     plt.plot(epochs, train_losses, label='Train Loss')
+#     plt.plot(epochs, validation_losses, label='Validation Loss')
+#     plt.xlabel('Epochs')
+#     plt.ylabel('Loss')
+#     # plt.title('Training and Validation Loss')
+#     plt.title(f'NN3vNN3_114K, test=0.1, \nbatch=16, lr=0.0002, wght_dec=1e-5')
+#
+#     plt.legend()
+#     plt.show()
 
 # episodes=40000
 # X_data, Y_data = load_numpy_data(f"FvF_init_data_x_y_{episodes}games.npz")
@@ -260,22 +219,10 @@ Y_data = np.concatenate((Y_data, Y_data1, Y_data2, Y_data3, Y_data4))
 
 Y_data[Y_data == -1] = 0
 
-# print(np.count_nonzero(Y_data))
-#
-#
-# # Train and evaluate the model using 80% for training and 20% for testing
 train_losses, test_losses = train_and_evaluate(Net, X_data, Y_data, test_size=0.25, epochs=20, batch_size=8)
 
 plot_losses(train_losses, test_losses)
-# Function to plot the training and validation loss
 
-
-# model = torch.load('FvF_22VP_114K_363feat_model.pth')
-#
-# # Make sure to call model.eval() if you're in inference mode
-# model.eval()
-#
-# torch.save(model.state_dict(), 'FvF_22VP_114K_363feat_model_weights.pth')
 
 
 

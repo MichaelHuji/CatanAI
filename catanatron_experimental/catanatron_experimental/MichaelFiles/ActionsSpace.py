@@ -1,10 +1,9 @@
 
-from catanatron.models.map import BASE_MAP_TEMPLATE, NUM_NODES, LandTile
+from catanatron.models.map import BASE_MAP_TEMPLATE, NUM_NODES, LandTile, build_map
 from catanatron.models.enums import RESOURCES, Action, ActionType
-from catanatron.models.board import get_edges
+from catanatron.models.board import get_edges, Board
 
 BASE_TOPOLOGY = BASE_MAP_TEMPLATE.topology
-
 TILE_COORDINATES = [x for x, y in BASE_TOPOLOGY.items() if y == LandTile]
 
 ACTIONS_ARRAY = [
@@ -49,6 +48,14 @@ ACTIONS_ARRAY = [
     (ActionType.END_TURN, None),
 ]
 
+ACTION_SPACE_SIZE = len(ACTIONS_ARRAY)
+ACTION_TYPES = [i for i in ActionType]
+
+
+def to_action_type_space(action):
+    return ACTION_TYPES.index(action.action_type)
+
+
 def normalize_action(action):
     normalized = action
     if normalized.action_type == ActionType.ROLL:
@@ -63,17 +70,17 @@ def normalize_action(action):
         return Action(action.color, action.action_type, None)
     return normalized
 
+
 def to_action_space(action):
     """maps action to space_action equivalent integer"""
     normalized = normalize_action(action)
     return ACTIONS_ARRAY.index((normalized.action_type, normalized.value))
 
+
 def from_action_space(action_int, playable_actions):
     """maps action_int to catantron.models.actions.Action"""
     # Get "catan_action" based on space action.
     # i.e. Take first action in playable that matches ACTIONS_ARRAY blueprint
-
-    # action_int = to_action_space(action_int)
     (action_type, value) = ACTIONS_ARRAY[action_int]
     catan_action = None
     for action in playable_actions:
@@ -83,5 +90,4 @@ def from_action_space(action_int, playable_actions):
             break  # return the first one
     assert catan_action is not None
     return catan_action
-
 
