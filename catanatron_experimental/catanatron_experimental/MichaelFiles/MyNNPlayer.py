@@ -9,8 +9,10 @@ from catanatron_experimental.MichaelFiles.Features import generate_x
 from catanatron_experimental.MichaelFiles.ActionsSpace import from_action_space
 
 # best_weights = f'NN2vNN2_47K_b16_lr005_model_weights_epoch19.pth'
-DEFAULT_WEIGHT='FvF_all_129K_363feat_model_weights_epoch39.pth'
+DEFAULT_WEIGHT='C:/Users/micha/PycharmProjects/catanProj/catanProj/catanatron_experimental/catanatron_experimental/MichaelFiles/model_weights/'
 
+some_weight_file = 'MYVF.2evF.25e_11004_b16_lr0.001_weights_epoch7.pth'
+some_weight_file2 = 'MYVF.2evF.25e_11004_b16_lr0.001_weights_epoch10.pth'
 # @register_player("NN")
 class MyNNPlayer(Player):
     """Simple AI player that always takes the first action in the list of playable_actions"""
@@ -19,7 +21,8 @@ class MyNNPlayer(Player):
 
         super().__init__(color, is_bot)
 
-        self.weights = DEFAULT_WEIGHT
+        weight_file = "MYVF.2evF.25e_500_b50_lr0.0001_weights_epoch20.pth"
+        self.weights = DEFAULT_WEIGHT + weight_file
         self.model = Net()
         # f'NN2vNN2_47K_b16_lr005_model_weights_epoch19.pth' is the best model we found so far
         self.model.load_state_dict(torch.load(self.weights))

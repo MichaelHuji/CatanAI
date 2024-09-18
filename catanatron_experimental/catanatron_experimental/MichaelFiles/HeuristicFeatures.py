@@ -1,4 +1,4 @@
-
+from catanatron.models.board import get_node_distances
 from catanatron.models.enums import RESOURCES, SETTLEMENT, CITY, FastResource
 from catanatron.state_functions import get_player_buildings
 from catanatron.models.decks import freqdeck_replenish
@@ -10,7 +10,56 @@ from typing import List, Dict
 import numpy as np
 from catanatron_experimental.MichaelFiles.Features import (calculate_resource_production_for_number,
                                                            calculate_resource_production_value_for_player)
+from catanatron_gym.features import get_player_expandable_nodes
+from catanatron_experimental.MichaelFiles.Features import get_node_production
 
+
+def calc_road_building_direction_reward(game, p0_color):
+
+    state = game.state
+    board = state.board
+    p0_expandable_nodes = get_player_expandable_nodes(game, p0_color)
+    distances = get_node_distances()
+
+    p0_buildable_node_ids = sorted(list(board.board_buildable_ids))
+
+    best_buildable_node_value = -1
+    for p0_buildable_node_id in p0_buildable_node_ids:
+        if len(p0_expandable_nodes) <= 0:
+            break
+        p0_min_distance_to_node = min([distances[p0_buildable_node_id][p0_node] for p0_node in p0_expandable_nodes])
+        # print(p0_min_distance_to_node)
+        if p0_min_distance_to_node > 1:
+            continue
+        road_value = 0
+        reward_factor = 0
+        if p0_min_distance_to_node == 1:
+            reward_factor = 1
+        elif p0_min_distance_to_node < 1:
+            reward_factor = 2
+        for resource in RESOURCES:
+            road_value += get_node_production(game.state.board, p0_buildable_node_id, resource)
+        if road_value > best_buildable_node_value:
+            best_buildable_node_value = road_value
+
+    return best_buildable_node_value
+
+def calc_port_reward(game, p0_color):
+    p1_color = Color.RED
+    if p0_color == p1_color:
+        p1_color = Color.BLUE
+    state = game.state
+    board = state.board
+    port_reward = 0
+    p0_port_resources = board.get_player_port_resources(p0_color)
+    if None in p0_port_resources:
+        port_reward = 1
+
+    for resource in RESOURCES:
+        if resource in p0_port_resources:
+            port_reward += 0.5
+
+    return port_reward
 
 def initial_stage_reward(game, p0_color):
     p1_color = Color.RED
@@ -20,12 +69,21 @@ def initial_stage_reward(game, p0_color):
     p1_key = player_key(game.state, p1_color)
 
     production_reward = calc_init_production_val(game.state, p0_color)
+    # print(f'production_reward = {production_reward:.3f}')
     production_reward -= calc_init_production_val(game.state, p1_color)
 
     resource_reward = calc_resource_reward(game.state, p_key, p0_color)
     resource_reward -= calc_resource_reward(game.state, p1_key, p1_color)
 
-    return production_reward + resource_reward
+    expand_reward = 0
+    expand_reward += calc_road_building_direction_reward(game, p0_color) / 10
+    expand_reward -= calc_road_building_direction_reward(game, p1_color) / 10
+    # print(f'road_reward = {road_reward}')
+    port_reward = calc_port_reward(game, p0_color) / 10
+    # print(f'port_reward = {port_reward}')
+    total_reward = production_reward + resource_reward + expand_reward + port_reward
+    # print(total_reward)
+    return total_reward
 
 def calc_init_production_val(state, p0_color):
     # the probabilities for 6, 8 are not 5 because they have a higher chance to get blocked
@@ -244,6 +302,10 @@ def simple_reward(game, p0_color):
     elif game.state.player_state[f"{p1_key}_HAS_ROAD"]:
         road_reward -= 3
 
+    expand_reward = 0
+    expand_reward += calc_road_building_direction_reward(game, p0_color) / 5
+    # expand_reward -= calc_road_building_direction_reward(game, p1_color) / 10
+
     # largest_army_reward = 0.3 * game.state.player_state[f"{p_key}_PLAYED_KNIGHT"]
     # largest_army_reward -= 0.3 * game.state.player_state[f"{p1_key}_PLAYED_KNIGHT"]
     # if game.state.player_state[f"{p_key}_HAS_ARMY"]:
@@ -259,28 +321,9 @@ def simple_reward(game, p0_color):
 
     resource_reward = calc_resource_reward(game.state, p_key, p0_color)
     resource_reward -= calc_resource_reward(game.state, p1_key, p1_color)
-    # print(f"midgame resource_reward : {resource_reward}")
 
-    # reachability_sample = reachability_features(game, p0_color, 2)
-    # features = [f"P0_0_ROAD_REACHABLE_{resource}" for resource in RESOURCES]
-    # reachable_production_at_zero = sum([reachability_sample[f] for f in features])
-    # features = [f"P0_1_ROAD_REACHABLE_{resource}" for resource in RESOURCES]
-    # reachable_production_at_one = sum([reachability_sample[f] for f in features])
-    #
-    # enemy_reachability_sample = reachability_features(game, p1_color, 2)
-    # features = [f"P0_0_ROAD_REACHABLE_{resource}" for resource in RESOURCES]
-    # enemy_reachable_production_at_zero = sum([enemy_reachability_sample[f] for f in features])
-    # features = [f"P0_1_ROAD_REACHABLE_{resource}" for resource in RESOURCES]
-    # enemy_reachable_production_at_one = sum([enemy_reachability_sample[f] for f in features])
+    port_reward = calc_port_reward(game, p0_color) / 10
 
-
-    # reachability_reward = 2*reachable_production_at_zero
-    # reachability_reward -= 2 * enemy_reachable_production_at_zero
-    # reachability_reward += reachable_production_at_one
-    # reachability_reward -= enemy_reachable_production_at_zero
-
-    # print(f"reachable_production_at_zero : {reachable_production_at_zero}")
-    # print(f"reachable_production_at_one : {reachable_production_at_one}")
     total_reward += production_reward
     total_reward += settlement_reward
     total_reward += city_reward
@@ -288,8 +331,8 @@ def simple_reward(game, p0_color):
     # total_reward += largest_army_reward
     total_reward += development_card_reward
     total_reward += resource_reward
-    # total_reward += reachability_reward
-    # print(f"total_reward : {total_reward}")
+    total_reward += expand_reward
+    total_reward += port_reward
     return total_reward
 
 def get_winning_reward(game, p0_color):

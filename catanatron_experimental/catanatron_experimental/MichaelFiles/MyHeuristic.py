@@ -8,15 +8,17 @@ from catanatron_gym.envs.catanatron_env import from_action_space
 
 # @register_player("MYVF")
 class MyVFPlayer(Player):
-    """
-    Player that chooses actions by maximizing Victory Points greedily.
-    If multiple actions lead to the same max-points-achievable
-    in this turn, selects from them at random.
-    """
+    def __init__(self, color, is_bot=True, epsilon=None):
+        super().__init__(color, is_bot)
+        self.epsilon = epsilon
 
     def decide(self, game: Game, playable_actions):
         if len(playable_actions) == 1:
             return playable_actions[0]
+
+            # for exploration
+        if self.epsilon is not None and random.random() < self.epsilon:
+            return random.choice(playable_actions)
 
         best_value = float("-inf")
         best_actions = []

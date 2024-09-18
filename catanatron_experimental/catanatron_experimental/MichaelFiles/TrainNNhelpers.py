@@ -29,16 +29,17 @@ def combine_datasets(players="FvF", games=114000):
     # X_data2, Y_data2 = load_numpy_data(f"game_simulation_data/WvW_22_99000games_364features.npz")
     # X_data3, Y_data3 = load_numpy_data(f"game_simulation_data/WvW_turn_10_99000games_364features.npz")
     # X_data4, Y_data4 = load_numpy_data(f"game_simulation_data/WvW_turn_20_99000games_364features.npz")
-    X_data0, Y_data0 = load_numpy_data(f"game_simulation_data/{players}_1_{games}games_363features.npz")
-    X_data1, Y_data1 = load_numpy_data(f"game_simulation_data/{players}_2_{games}games_363features.npz")
-    X_data2, Y_data2 = load_numpy_data(f"game_simulation_data/{players}_22_{games}games_363features.npz")
-    X_data3, Y_data3 = load_numpy_data(f"game_simulation_data/{players}_turn_10_{games}games_363features.npz")
-    X_data4, Y_data4 = load_numpy_data(f"game_simulation_data/{players}_turn_20_{games}games_363features.npz")
+    X_data0, Y_data0 = load_numpy_data(f"game_simulation_data/{players}_1_{games}games_477features.npz")
+    X_data1, Y_data1 = load_numpy_data(f"game_simulation_data/{players}_2_{games}games_477features.npz")
+    X_data2, Y_data2 = load_numpy_data(f"game_simulation_data/{players}_4_{games}games_477features.npz")
+    X_data3, Y_data3 = load_numpy_data(f"game_simulation_data/{players}_6_{games}games_477features.npz")
+    X_data4, Y_data4 = load_numpy_data(f"game_simulation_data/{players}_8_{games}games_477features.npz")
+    X_data5, Y_data5 = load_numpy_data(f"game_simulation_data/{players}_9_{games}games_477features.npz")
 
-    X_data = np.concatenate((X_data0, X_data1, X_data2, X_data3, X_data4), axis=0)
-    Y_data = np.concatenate((Y_data0, Y_data1, Y_data2, Y_data3, Y_data4))
+    X_data = np.concatenate((X_data0, X_data1, X_data2, X_data3, X_data4, X_data5), axis=0)
+    Y_data = np.concatenate((Y_data0, Y_data1, Y_data2, Y_data3, Y_data4, Y_data5))
 
-    Y_data[Y_data == -1] = 0
+    # Y_data[Y_data == -1] = 0
 
     return X_data, Y_data
 
@@ -49,3 +50,11 @@ def combine_two_datasets(X_data1, Y_data1, X_data2, Y_data2):
     Y_data = np.concatenate((Y_data1, Y_data2))
 
     return X_data, Y_data
+
+
+def remove_VP_feature(X_data):
+    X_data = np.delete(X_data, 324, axis=1)
+    return np.delete(X_data, 343, axis=1)
+
+
+

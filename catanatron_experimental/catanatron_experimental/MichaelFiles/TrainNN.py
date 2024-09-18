@@ -6,6 +6,10 @@ from sklearn.model_selection import train_test_split
 import numpy as np
 from tqdm import tqdm  # Import tqdm
 from catanatron_experimental.MichaelFiles.Net import Net
+from TrainNNhelpers import combine_datasets, combine_two_datasets
+DEFAULT_WEIGHT='C:/Users/micha/PycharmProjects/catanProj/catanProj/catanatron_experimental/catanatron_experimental/MichaelFiles/model_weights/'
+
+
 
 # Function to train the model
 def train_model(model, train_loader, test_loader, criterion, optimizer, epochs,
@@ -16,6 +20,7 @@ def train_model(model, train_loader, test_loader, criterion, optimizer, epochs,
     for epoch in tqdm(range(epochs)):
         model.train()  # Set model to training mode
         train_accuracy = 0.0
+        train_size = 0
         for inputs, labels in train_loader:
 
             optimizer.zero_grad()  # Clear gradients from previous step
@@ -26,9 +31,10 @@ def train_model(model, train_loader, test_loader, criterion, optimizer, epochs,
 
             outputs[outputs >= thrshold] = 1
             outputs[outputs < thrshold] = 0
+            train_size += len(labels)
             train_accuracy += torch.sum(torch.abs(outputs - labels)).item()
-        print(f"Epoch [{epoch + 1}/{epochs}], train accuracy: {train_accuracy/len(train_loader)}")
-        train_losses.append(train_accuracy/len(train_loader))
+        print(f"Epoch [{epoch + 1}/{epochs}], train accuracy: {train_accuracy/train_size}, train_size: {train_size}")
+        train_losses.append(train_accuracy/train_size)
 
         model.eval()  # Set model to evaluation mode
         test_loss = 0.0
@@ -40,18 +46,18 @@ def train_model(model, train_loader, test_loader, criterion, optimizer, epochs,
                 outputs[outputs >= thrshold] = 1
                 outputs[outputs < thrshold] = 0
                 test_loss += torch.sum(torch.abs(outputs - labels)).item()
-
+                test_size += len(labels)
         print(f"Epoch [{epoch + 1}/{epochs}], Validation Loss: {test_loss / test_size}, test size: {test_size}")
         test_losses.append(test_loss / test_size)
 
-        torch.save(model.state_dict(), f'{plrs}_{gms}_b{btch}_lr{lr}_weights_epoch{epoch+1}.pth')
+        torch.save(model.state_dict(), f'model_weights/{plrs}_{gms}_b{btch}_lr{lr}_weights_epoch{epoch+1}.pth')
 
     return train_losses, test_losses
 
 # Example: Splitting the data into train and test sets, training, and evaluating
 def train_and_evaluate(model_class, X, Y, test_size=0.1, epochs=30,
                        plrs="NN3vNN3", gms=114000, batch_size=16, lr=0.001, weight_decay=1e-5,
-                       weights=f'NN2vNN2_47K_b16_lr001_model_weights_epoch12.pth'):
+                       weights=None):
 
     # Split the data into training and testing sets
     X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=test_size, random_state=42)
@@ -73,7 +79,9 @@ def train_and_evaluate(model_class, X, Y, test_size=0.1, epochs=30,
 
     if weights != None:
         # load pre-trained weights
+        weights = DEFAULT_WEIGHT + weights
         model.load_state_dict(torch.load(weights))
+        print('loaded weights')
 
     optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
     # TODO: add scheduler for learning rate
@@ -84,22 +92,30 @@ def train_and_evaluate(model_class, X, Y, test_size=0.1, epochs=30,
 
     return trn_los, tst_los
 
-players = "WvW"         # choose on which player data to train the model
-games = "99K"          # choose on data from how many to train the model
-test_size = 0.25        # choose what percent of data is used in the test set
-epochs = 30             # choose the number of epochs to train the model
-batch_size = 32         # choose the size of batches used in training
-learning_rate = 0.001   # choose the learning rate
-weight_decay = 1e-5     # choose the weight decay
 
-weights = None          # choose the weights to load in the model before the training
-X_data, Y_data = combine_datasets(players, games)
+players = "MYVF.2evF.25e"   # choose on which player data to train the model
+games = 500                # choose on data from how many to train the model
+test_size = 0.5             # choose what percent of data is used in the test set
+epochs = 20                 # choose the number of epochs to train the model
+batch_size = 50              # choose the size of batches used in training
+learning_rate = 0.0001        # choose the learning rate
+weight_decay = 1e-5         # choose the weight decay
+# weights = None              # choose the weights to load in the model before the training
+weights = 'MYVF.2evF.25e_11004_b16_lr0.001_weights_epoch10.pth'
+
+# X_data, Y_data = combine_datasets("MYVF.2evF.2e", 12000)
+X_data, Y_data = combine_datasets("MYVF.25evF.25e", 500)
+
+# X_data2, Y_data2 = combine_datasets("MYVF.25evF.25e", 6001)
+# X_data, Y_data = combine_two_datasets(X_data, Y_data, X_data2, Y_data2)
 
 # # Train and evaluate the model using 80% for training and 20% for testing
 train_losses, test_losses = train_and_evaluate(Net, X_data,
                                                Y_data,
                                                test_size=test_size,
                                                epochs=epochs,
+                                               plrs=players,
+                                               gms=games,
                                                batch_size=batch_size,
                                                lr=learning_rate,
                                                weight_decay = weight_decay,
@@ -108,4 +124,14 @@ train_losses, test_losses = train_and_evaluate(Net, X_data,
 
 plot_losses(train_losses, test_losses, plrs=players,
             gms=games, tst=test_size,
-            btch=batch_size, lr=0.001, wght=1e-5)
+            btch=batch_size, lr=learning_rate, wght=weight_decay)
+
+
+
+# filename = 'C:/Users/micha/PycharmProjects/catanProj/catanProj/catanatron_experimental/catanatron_experimental/MichaelFiles/game_simulation_data/'
+#
+# filename += 'MYVF.25evF.25e_4_500games_477features.npz'
+# data = np.load(filename)
+# X = data['X']
+# Y = data['Y']
+# print(X[:, -1])

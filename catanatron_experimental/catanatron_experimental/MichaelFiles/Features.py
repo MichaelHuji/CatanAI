@@ -8,7 +8,8 @@ from collections import defaultdict
 from catanatron.game import Game
 from typing import List, Dict
 import numpy as np
-
+from catanatron_gym.features import get_player_expandable_nodes
+from catanatron.models.board import get_node_distances
 
 def calculate_resource_production_for_number(board, number):
     intented_payout: Dict[Color, Dict[FastResource, int]] = defaultdict(
@@ -116,66 +117,101 @@ def generate_x(game, p0_color):
     p0_city = get_player_buildings(state, p0_color, CITY)
     p1_city = get_player_buildings(state, p1_color, CITY)
 
-    X = np.zeros(363)
+    p0_expandable_nodes = get_player_expandable_nodes(game, p0_color)
+    p1_expandable_nodes = get_player_expandable_nodes(game, p1_color)
+
+    distances = get_node_distances()
+
+    p0_port_resources = board.get_player_port_resources(p0_color)
+    p1_port_resources = board.get_player_port_resources(p1_color)
+
+    X = np.zeros(477)
     for i in range(54):
 
         if i in p0_settle:
-            X[6 * i] = 1
+            X[8 * i] = 1
         if i in p1_settle:
-            X[6 * i] = -1
+            X[8 * i] = -1
         if i in p0_city:
-            X[6 * i] = 2
+            X[8 * i] = 2
         if i in p1_city:
-            X[6 * i] = -2
+            X[8 * i] = -2
 
         for j, resource in enumerate(RESOURCES):
-            X[(6 * i) + (j + 1)] = get_node_production(game.state.board.map, i, resource)
+            X[(8 * i) + (j + 1)] = get_node_production(game.state.board, i, resource)
+
+        if len(p0_expandable_nodes) > 0:
+            p0_min_distance_to_node_i = min([distances[i][p0_node] for p0_node in p0_expandable_nodes])
+        else:
+            p0_min_distance_to_node_i = 15
+        X[(8 * i) + 6] = p0_min_distance_to_node_i
+        if len(p1_expandable_nodes) > 0:
+            p1_min_distance_to_node_i = min([distances[i][p1_node] for p1_node in p1_expandable_nodes])
+        else:
+            p1_min_distance_to_node_i = 15
+        # p1_min_distance_to_node_i = min([distances[i][p1_node] for p1_node in p1_expandable_nodes])
+        X[(8 * i) + 7] = p1_min_distance_to_node_i
 
     # features for player 0 (BLUE / me)
-    X[324] = player_state[f"{p_key}_VICTORY_POINTS"]
-    X[325] = player_state[f"{p_key}_SETTLEMENTS_AVAILABLE"]
-    X[326] = player_state[f"{p_key}_CITIES_AVAILABLE"]
-    X[327] = player_state[f"{p_key}_ROADS_AVAILABLE"] / 13
-    X[328] = player_state[f"{p_key}_PLAYED_KNIGHT"]
-    X[329] = player_state[f"{p_key}_HAS_ARMY"]
-    X[330] = player_state[f"{p_key}_HAS_ROAD"]
-    X[331] = player_state[f"{p_key}_LONGEST_ROAD_LENGTH"]
-    X[332] = calc_dev_card_in_hand(state, p_key)
+    X[432] = calc_dev_card_in_hand(state, p_key)
+    X[433] = player_state[f"{p_key}_ROADS_AVAILABLE"] / 13
+    X[434] = player_state[f"{p_key}_PLAYED_KNIGHT"]
+    X[435] = player_state[f"{p_key}_HAS_ARMY"]
+    X[436] = player_state[f"{p_key}_HAS_ROAD"]
+    X[437] = player_state[f"{p_key}_LONGEST_ROAD_LENGTH"]
     for j, r in enumerate(RESOURCES):
-        X[333 + j] = player_state[f"{p_key}_{r}_IN_HAND"]
+        X[438 + j] = player_state[f"{p_key}_{r}_IN_HAND"]
     p0_prod = calc_clean_prod(game.state, p0_color)
     for j, p in enumerate(p0_prod):
-        X[338+j] = p
+        X[443+j] = p
+    if None in p0_port_resources:   # if has 3:1 port
+        X[448] = 1
+    for j, r in enumerate(RESOURCES):   # if has 2:1 port
+        if r in p0_port_resources:
+            X[449 + j] = 1
+
 
     # features for player 1 (RED / enemy)
-    X[343] = player_state[f"{p1_key}_VICTORY_POINTS"]
-    X[344] = player_state[f"{p1_key}_SETTLEMENTS_AVAILABLE"]
-    X[345] = player_state[f"{p1_key}_CITIES_AVAILABLE"]
-    X[346] = player_state[f"{p1_key}_ROADS_AVAILABLE"] / 13
-    X[347] = player_state[f"{p1_key}_PLAYED_KNIGHT"]
-    X[348] = player_state[f"{p1_key}_HAS_ARMY"]
-    X[349] = player_state[f"{p1_key}_HAS_ROAD"]
-    X[350] = player_state[f"{p1_key}_LONGEST_ROAD_LENGTH"]
-    X[351] = calc_dev_card_in_hand(state, p1_key)
+    X[454] = calc_dev_card_in_hand(state, p1_key)
+    X[455] = player_state[f"{p1_key}_ROADS_AVAILABLE"] / 13
+    X[456] = player_state[f"{p1_key}_PLAYED_KNIGHT"]
+    X[457] = player_state[f"{p1_key}_HAS_ARMY"]
+    X[458] = player_state[f"{p1_key}_HAS_ROAD"]
+    X[459] = player_state[f"{p1_key}_LONGEST_ROAD_LENGTH"]
     for j, r in enumerate(RESOURCES):
-        X[352 + j] = player_state[f"{p1_key}_{r}_IN_HAND"]
+        X[460 + j] = player_state[f"{p1_key}_{r}_IN_HAND"]
     p1_prod = calc_clean_prod(game.state, p1_color)
     for j, p in enumerate(p1_prod):
-        X[357 + j] = p
+        X[465 + j] = p
+    if None in p1_port_resources:   # if has 3:1 port
+        X[470] = 1
+    for j, r in enumerate(RESOURCES):   # if has 2:1 port
+        if r in p1_port_resources:
+            X[471 + j] = 1
 
-    X[362] = state.num_turns
+    X[476] = state.num_turns
 
     return X
 
-def get_node_production(catan_map, node_id, resource):
+def get_node_production(board, node_id, resource):
+
+    catan_map = board.map
+    robber_coordinates = board.robber_coordinate
+    robber_tile = board.map.land_tiles[robber_coordinates]  # gives penalty to the robber tile
+    robber_resource = robber_tile.resource
+    robber_nodes = robber_tile.nodes.values()
 
     prob_dict = {2: 1, 3: 2, 4: 3, 5: 4, 6: 5, 7: 0, 8: 5, 9: 4, 10: 3, 11: 2, 12: 1}
     production = 0
     for tile in catan_map.adjacent_tiles[node_id]:
+        robber_penalty = 1
+        if tile.id == robber_tile.id:
+            robber_penalty = 0.1
         if tile.resource == resource:
-            production += prob_dict[tile.number]
+            production += prob_dict[tile.number] * robber_penalty
 
     return production
+
 
 
 

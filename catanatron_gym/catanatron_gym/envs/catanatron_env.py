@@ -183,27 +183,30 @@ class CatanatronEnv(gym.Env):
     reward_range = (-1, 1)
 
     def __init__(self, config=None):
+        print("CatanatronEnv")
         self.config = config or dict()
         self.invalid_action_reward = self.config.get("invalid_action_reward", -1)
         self.reward_function = self.config.get("reward_function", simple_reward)
         self.map_type = self.config.get("map_type", "BASE")
         self.vps_to_win = self.config.get("vps_to_win", 10)
 
-        self.enemies = self.config.get("enemies", [RandomPlayer(Color.RED)])
+        # self.enemies = self.config.get("enemies", [RandomPlayer(Color.RED)])
         # self.enemies = self.config.get("enemies", [WeightedRandomPlayer(Color.RED)])
-        # self.enemies = self.config.get("enemies", [ValueFunctionPlayer(Color.RED)])
+        self.enemies = self.config.get("enemies", [ValueFunctionPlayer(Color.RED, epsilon=0.1)])
         # self.enemies = self.config.get("enemies", [AlphaBetaPlayer(Color.RED)])
         # self.enemies = self.config.get("enemies", [MyNNPlayer(Color.RED)])
-
-        self.X_1VP = 0
-        self.X_2VP = 0
-        self.X_11VP = 0
-        self.X_22VP = 0
+        self.X_1VP = np.zeros(477)
+        self.X_2VP = np.zeros(477)
+        self.X_4VP = np.zeros(477)
+        self.X_6VP = np.zeros(477)
+        self.X_8VP = np.zeros(477)
+        self.X_9VP = np.zeros(477)
         self.got_X_1VP = False
         self.got_X_2VP = False
-        self.got_X_11VP = False
-        self.got_X_22VP = False
-        self.x_turn = {10: 0 , 20: 0 , 30: 0}
+        self.got_X_4VP = False
+        self.got_X_6VP = False
+        self.got_X_8VP = False
+        self.got_X_9VP = False
         self.representation = self.config.get("representation", "vector")
 
         assert all(p.color != Color.BLUE for p in self.enemies)
@@ -272,19 +275,19 @@ class CatanatronEnv(gym.Env):
                 or self.game.state.num_turns >= TURNS_LIMIT
             )
 
-            y = 0
+            y = 0.5
             if winning_color == Color.BLUE:
                 y = 1
             elif winning_color == Color.RED:
-                y = -1
-
+                y = 0
+            print(f"env.step exception, y={y}")
             info = dict(valid_actions=self.get_valid_actions())
             info['x1'] = self.X_1VP
             info['x2'] = self.X_2VP
-            info['x22'] = self.X_22VP
-            info['turn_10'] = self.x_turn[10]
-            info['turn_20'] = self.x_turn[20]
-            info['turn_30'] = self.x_turn[30]
+            info['x4'] = self.X_4VP
+            info['x6'] = self.X_6VP
+            info['x8'] = self.X_8VP
+            info['x9'] = self.X_9VP
             info['y'] = y
             return observation, self.invalid_action_reward, terminated, truncated, info
 
@@ -297,27 +300,35 @@ class CatanatronEnv(gym.Env):
         p_key = player_key(self.game.state, self.p0.color)
         p1_key = player_key(self.game.state, p1_color)
 
-        if (not self.got_X_1VP) and (self.game.state.player_state[f"{p_key}_ACTUAL_VICTORY_POINTS"] == 1):
+        if (not self.got_X_1VP) and (self.game.state.player_state[f"{p_key}_ACTUAL_VICTORY_POINTS"] >= 1
+                                   or self.game.state.player_state[f"{p1_key}_ACTUAL_VICTORY_POINTS"] >= 1):
             self.X_1VP = generate_x(self.game, self.p0.color)
             self.got_X_1VP = True
 
-        if ((not self.got_X_2VP) and (self.game.state.player_state[f"{p_key}_ACTUAL_VICTORY_POINTS"] == 2)):
+        if (not self.got_X_2VP) and (self.game.state.player_state[f"{p_key}_ACTUAL_VICTORY_POINTS"] >= 2
+                                   and self.game.state.player_state[f"{p1_key}_ACTUAL_VICTORY_POINTS"] >= 2):
             self.X_2VP = generate_x(self.game, self.p0.color)
             self.got_X_2VP = True
 
-        if ((not self.got_X_22VP) and (self.game.state.player_state[f"{p_key}_ACTUAL_VICTORY_POINTS"] == 2) and
-                (self.game.state.player_state[f"{p1_key}_ACTUAL_VICTORY_POINTS"] == 2)):
-            self.X_22VP = generate_x(self.game, self.p0.color)
-            self.got_X_22VP = True
+        if (not self.got_X_4VP) and ((self.game.state.player_state[f"{p_key}_ACTUAL_VICTORY_POINTS"] >= 4) or
+                (self.game.state.player_state[f"{p1_key}_ACTUAL_VICTORY_POINTS"] >= 4)):
+            self.X_4VP = generate_x(self.game, self.p0.color)
+            self.got_X_4VP = True
 
-        if (isinstance(self.x_turn[10], int)) and (self.game.state.num_turns >= 5 and self.game.state.num_turns < 14):
-            self.x_turn[10] = generate_x(self.game, self.p0.color)
+        if (not self.got_X_6VP) and ((self.game.state.player_state[f"{p_key}_ACTUAL_VICTORY_POINTS"] >= 6) or
+                (self.game.state.player_state[f"{p1_key}_ACTUAL_VICTORY_POINTS"] >= 6)):
+            self.X_6VP = generate_x(self.game, self.p0.color)
+            self.got_X_6VP = True
 
-        if (isinstance(self.x_turn[20], int)) and (self.game.state.num_turns >= 14 and self.game.state.num_turns < 21):
-            self.x_turn[20] = generate_x(self.game, self.p0.color)
+        if (not self.got_X_8VP) and ((self.game.state.player_state[f"{p_key}_ACTUAL_VICTORY_POINTS"] >= 8) or
+                (self.game.state.player_state[f"{p1_key}_ACTUAL_VICTORY_POINTS"] >= 8)):
+            self.X_8VP = generate_x(self.game, self.p0.color)
+            self.got_X_8VP = True
 
-        if (isinstance(self.x_turn[30], int)) and (self.game.state.num_turns >= 22):
-            self.x_turn[30] = generate_x(self.game, self.p0.color)
+        if (not self.got_X_9VP) and ((self.game.state.player_state[f"{p_key}_ACTUAL_VICTORY_POINTS"] >= 9) or
+                (self.game.state.player_state[f"{p1_key}_ACTUAL_VICTORY_POINTS"] >= 9)):
+            self.X_9VP = generate_x(self.game, self.p0.color)
+            self.got_X_9VP = True
 
         observation = self._get_observation()
         info = dict(valid_actions=self.get_valid_actions())
@@ -327,19 +338,19 @@ class CatanatronEnv(gym.Env):
         truncated = self.game.state.num_turns >= TURNS_LIMIT
         reward = self.reward_function(self.game, self.p0.color)
 
-        y = 0
+        y = 0.5
         if winning_color == Color.BLUE:
             y = 1
         elif winning_color == Color.RED:
-            y = -1
-
+            y = 0
         info['x1'] = self.X_1VP
         info['x2'] = self.X_2VP
-        info['x22'] = self.X_22VP
-        info['turn_10'] = self.x_turn[10]
-        info['turn_20'] = self.x_turn[20]
-        info['turn_30'] = self.x_turn[30]
+        info['x4'] = self.X_4VP
+        info['x6'] = self.X_6VP
+        info['x8'] = self.X_8VP
+        info['x9'] = self.X_9VP
         info['y'] = y
+
         return observation, reward, terminated, truncated, info
 
     def reset(self,seed=None,options=None,):
@@ -351,14 +362,18 @@ class CatanatronEnv(gym.Env):
         self.game = Game(players=self.players,seed=seed,catan_map=catan_map,vps_to_win=self.vps_to_win,)
         self.invalid_actions_count = 0
 
-        self.X_1VP = np.zeros(363)
+        self.X_1VP = np.zeros(477)
+        self.X_2VP = np.zeros(477)
+        self.X_4VP = np.zeros(477)
+        self.X_6VP = np.zeros(477)
+        self.X_8VP = np.zeros(477)
+        self.X_9VP = np.zeros(477)
         self.got_X_1VP = False
-        self.X_2VP = np.zeros(363)
         self.got_X_2VP = False
-        self.X_22VP = np.zeros(363)
-        self.got_X_22VP = False
-        self.x_turn = {10: 0 , 20: 0 , 30: 0}
-
+        self.got_X_4VP = False
+        self.got_X_6VP = False
+        self.got_X_8VP = False
+        self.got_X_9VP = False
         self._advance_until_p0_decision()
 
         observation = self._get_observation()
@@ -550,141 +565,5 @@ CatanatronEnv.__doc__ += """
      - 
 """
 
-#
-# def calc_clean_prod(state, p_color):
-#     prob_dict = {2: 1, 3: 2, 4: 3, 5: 4, 6: 5, 7: 0, 8: 5, 9: 4, 10: 3, 11: 2, 12: 1}
-#     p0_total_payout = [0, 0, 0, 0, 0]
-#     # p0_nodes = [list(), list(), list(), list(), list()]
-#     for number, prob in prob_dict.items():
-#         payout = calculate_resource_production_for_number(state.board, number)
-#         if p_color in payout.keys():
-#             p0_payout = payout[p_color]
-#         else:
-#             p0_payout = [0, 0, 0, 0, 0]
-#
-#         for i, amount in enumerate(p0_payout):
-#             # for j in range(int(amount)):
-#             #     p0_nodes[i].append(number)
-#             p0_total_payout[i] += (amount * prob)
-#     return p0_total_payout
-#
-# def calc_dev_card_in_hand(state, p_key):
-#     dev_card_in_hand = 0
-#     dev_card_in_hand += state.player_state[f"{p_key}_KNIGHT_IN_HAND"]
-#     dev_card_in_hand += state.player_state[f"{p_key}_YEAR_OF_PLENTY_IN_HAND"]
-#     dev_card_in_hand += state.player_state[f"{p_key}_ROAD_BUILDING_IN_HAND"]
-#     dev_card_in_hand += state.player_state[f"{p_key}_MONOPOLY_IN_HAND"]
-#     dev_card_in_hand += state.player_state[f"{p_key}_VICTORY_POINT_IN_HAND"]
-#
-#     return dev_card_in_hand
-#
-# def generate_x(game, p0_color):
-#     p1_color = Color.RED
-#     if p0_color == p1_color:
-#         p1_color = Color.BLUE
-#     p_key = player_key(game.state, p0_color)
-#     p1_key = player_key(game.state, p1_color)
-#
-#     state = game.state
-#     board = state.board
-#     player_state = state.player_state
-#     # # we will later add port features for each node
-#     # X = np.zeros(648)
-#     # for i in range(54):
-#     #
-#     #     if i in get_player_buildings(state, p0_color, SETTLEMENT):
-#     #         X[12 * i] = 1
-#     #     elif i in get_player_buildings(state, p1_color, SETTLEMENT):
-#     #         X[12 * i] = -1
-#     #
-#     #     for j, resource in enumerate(RESOURCES):
-#     #         entry_index = 12*i + j + 1
-#     #         X[entry_index] = get_node_production(game.state.board.map, i, resource)
-#     #
-#     # return X
-#
-#
-#     # p0_buildings = get_player_buildings(state, p0_color, SETTLEMENT)
-#     # p1_buildings = get_player_buildings(state, p1_color, SETTLEMENT)
-#     #
-#     # X = np.zeros(324)
-#     # for i in range(54):
-#     #
-#     #     if i in p0_buildings:
-#     #         X[6 * i] = 1
-#     #     elif i in p1_buildings:
-#     #         X[6 * i] = -1
-#     #
-#     #     for j, resource in enumerate(RESOURCES):
-#     #         X[(6 * i) + (j + 1)] = get_node_production(game.state.board.map, i, resource)
-#     #
-#     # return X
-#
-#     p0_settle = get_player_buildings(state, p0_color, SETTLEMENT)
-#     p1_settle = get_player_buildings(state, p1_color, SETTLEMENT)
-#     p0_city = get_player_buildings(state, p0_color, CITY)
-#     p1_city = get_player_buildings(state, p1_color, CITY)
-#
-#     X = np.zeros(363)
-#     for i in range(54):
-#
-#         if i in p0_settle:
-#             X[6 * i] = 1
-#         if i in p1_settle:
-#             X[6 * i] = -1
-#         if i in p0_city:
-#             X[6 * i] = 2
-#         if i in p1_city:
-#             X[6 * i] = -2
-#
-#         for j, resource in enumerate(RESOURCES):
-#             X[(6 * i) + (j + 1)] = get_node_production(game.state.board.map, i, resource)
-#
-#     # features for player 0 (BLUE / me)
-#     X[324] = player_state[f"{p_key}_VICTORY_POINTS"]
-#     X[325] = player_state[f"{p_key}_SETTLEMENTS_AVAILABLE"]
-#     X[326] = player_state[f"{p_key}_CITIES_AVAILABLE"]
-#     X[327] = player_state[f"{p_key}_ROADS_AVAILABLE"] / 13
-#     X[328] = player_state[f"{p_key}_PLAYED_KNIGHT"]
-#     X[329] = player_state[f"{p_key}_HAS_ARMY"]
-#     X[330] = player_state[f"{p_key}_HAS_ROAD"]
-#     X[331] = player_state[f"{p_key}_LONGEST_ROAD_LENGTH"]
-#     X[332] = calc_dev_card_in_hand(state, p_key)
-#     for j, r in enumerate(RESOURCES):
-#         X[333 + j] = player_state[f"{p_key}_{r}_IN_HAND"]
-#     p0_prod = calc_clean_prod(game.state, p0_color)
-#     for j, p in enumerate(p0_prod):
-#         X[338+j] = p
-#
-#     # features for player 1 (RED / enemy)
-#     X[343] = player_state[f"{p1_key}_VICTORY_POINTS"]
-#     X[344] = player_state[f"{p1_key}_SETTLEMENTS_AVAILABLE"]
-#     X[345] = player_state[f"{p1_key}_CITIES_AVAILABLE"]
-#     X[346] = player_state[f"{p1_key}_ROADS_AVAILABLE"] / 13
-#     X[347] = player_state[f"{p1_key}_PLAYED_KNIGHT"]
-#     X[348] = player_state[f"{p1_key}_HAS_ARMY"]
-#     X[349] = player_state[f"{p1_key}_HAS_ROAD"]
-#     X[350] = player_state[f"{p1_key}_LONGEST_ROAD_LENGTH"]
-#     X[351] = calc_dev_card_in_hand(state, p1_key)
-#     for j, r in enumerate(RESOURCES):
-#         X[352 + j] = player_state[f"{p1_key}_{r}_IN_HAND"]
-#     p1_prod = calc_clean_prod(game.state, p1_color)
-#     for j, p in enumerate(p1_prod):
-#         X[357 + j] = p
-#
-#     X[362] = state.num_turns
-#
-#     return X
-#
-# def get_node_production(catan_map, node_id, resource):
-#
-#     prob_dict = {2: 1, 3: 2, 4: 3, 5: 4, 6: 5, 7: 0, 8: 5, 9: 4, 10: 3, 11: 2, 12: 1}
-#     production = 0
-#     for tile in catan_map.adjacent_tiles[node_id]:
-#         if tile.resource == resource:
-#             production += prob_dict[tile.number]
-#
-#     return production
-#
-#     # tiles = catan_map.adjacent_tiles[node_id]
-#     # return sum([number_probability(t.number) for t in tiles if t.resource == resource])
+
+
