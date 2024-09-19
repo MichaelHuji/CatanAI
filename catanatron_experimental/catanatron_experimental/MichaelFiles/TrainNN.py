@@ -138,3 +138,4 @@ train_losses, test_losses = train_and_evaluate(Net, X_data,
 plot_losses(train_losses, test_losses, plrs=players,
             gms=games, tst=test_size,
             btch=batch_size, lr=learning_rate, wght=weight_decay)
+
