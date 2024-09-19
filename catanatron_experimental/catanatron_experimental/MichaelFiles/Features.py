@@ -190,6 +190,14 @@ def generate_x(game, p0_color):
             X[471 + j] = 1
 
     X[476] = state.num_turns
+    X[477] = player_state[f"{p_key}_ACTUAL_VICTORY_POINTS"]
+    X[478] = player_state[f"{p_key}_SETTLEMENTS_AVAILABLE"]
+    X[479] = player_state[f"{p_key}_CITIES_AVAILABLE"]
+    X[480] = player_state[f"{p1_key}_ACTUAL_VICTORY_POINTS"]
+    X[481] = player_state[f"{p1_key}_SETTLEMENTS_AVAILABLE"]
+    X[482] = player_state[f"{p1_key}_CITIES_AVAILABLE"]
+    X[483] = player_state[f"{p_key}_ROADS_AVAILABLE"]
+    X[484] = player_state[f"{p1_key}_ROADS_AVAILABLE"]
 
     return X
 

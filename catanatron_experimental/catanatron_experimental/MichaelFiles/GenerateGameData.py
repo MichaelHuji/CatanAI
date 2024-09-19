@@ -72,17 +72,17 @@ def simulate_games(env, model, episodes, players):
     # print(X1_data)
     # print(Y_data)
     # print(np.array(X9_data)[300:500, 476])
-    np.savez(f"game_simulation_data/{players}_1_{episodes}games_477features.npz", X=np.array(X1_data), Y=np.array(Y_data))
+    np.savez(f"game_simulation_data/{players}_1_{episodes}games_485features.npz", X=np.array(X1_data), Y=np.array(Y_data))
 
-    np.savez(f"game_simulation_data/{players}_2_{episodes}games_477features.npz", X=np.array(X2_data), Y=np.array(Y_data))
+    np.savez(f"game_simulation_data/{players}_2_{episodes}games_485features.npz", X=np.array(X2_data), Y=np.array(Y_data))
 
-    np.savez(f"game_simulation_data/{players}_4_{episodes}games_477features.npz", X=np.array(X4_data), Y=np.array(Y_data))
+    np.savez(f"game_simulation_data/{players}_4_{episodes}games_485features.npz", X=np.array(X4_data), Y=np.array(Y_data))
 
-    np.savez(f"game_simulation_data/{players}_6_{episodes}games_477features.npz", X=np.array(X6_data), Y=np.array(Y_data))
+    np.savez(f"game_simulation_data/{players}_6_{episodes}games_485features.npz", X=np.array(X6_data), Y=np.array(Y_data))
 
-    np.savez(f"game_simulation_data/{players}_8_{episodes}games_477features.npz", X=np.array(X8_data), Y=np.array(Y_data))
+    np.savez(f"game_simulation_data/{players}_8_{episodes}games_485features.npz", X=np.array(X8_data), Y=np.array(Y_data))
 
-    np.savez(f"game_simulation_data/{players}_9_{episodes}games_477features.npz", X=np.array(X9_data), Y=np.array(Y_data))
+    np.savez(f"game_simulation_data/{players}_9_{episodes}games_485features.npz", X=np.array(X9_data), Y=np.array(Y_data))
 
     return np.array(X9_data), np.array(Y_data)
 
@@ -93,7 +93,7 @@ env = gym.make("catanatron_gym:catanatron-v1")
 # model = ValueFunctionPlayer(Color.BLUE, epsilon=0.15)
 # model = AlphaBetaPlayer(Color.BLUE)
 # model = MyNNPlayer(Color.BLUE)
-model = MyVFPlayer(Color.BLUE, epsilon=0.1)
+model = MyVFPlayer(Color.BLUE)
 
 
 # env.enemies = [RandomPlayer(Color.RED)]
@@ -105,7 +105,7 @@ model = MyVFPlayer(Color.BLUE, epsilon=0.1)
 # env.players = [env.p0] + env.enemies
 
 num_games = 115000
-X_data, Y_data = simulate_games(env, model, num_games, "MYVF.1evF.1e")  # generate data for {episodes} games
+X_data, Y_data = simulate_games(env, model, num_games, "MYVFvF")  # generate data for {episodes} games
 
 print(f"np.sum(Y_data) : {np.sum(Y_data)}")
 print(f"np.count_nonzero(Y_data) : {np.count_nonzero(Y_data)}")
