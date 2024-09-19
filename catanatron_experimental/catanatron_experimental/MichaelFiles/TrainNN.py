@@ -81,15 +81,15 @@ def train_and_evaluate(model_class, X, Y, test_size=0.1, epochs=30,
         # load pre-trained weights
 
         # Get current working directory
-        cwd = os.getcwd()
+        # cwd = os.getcwd()
 
         # weight_file_name = f'NN2vNN2_47K_b16_lr005_model_weights_epoch19.pth' # is the best model we found so far
-        weight_file_name = 'catanatron_experimental/catanatron_experimental/MichaelFiles/model_weights/'
+        # weight_file_name = 'catanatron_experimental/catanatron_experimental/MichaelFiles/model_weights/'
 
-        weight_file_name += weights
+        file_path = 'model_weights/' + weights
         # Join the directory with the file name
 
-        file_path = os.path.join(cwd, weight_file_name)
+        # file_path = os.path.join(cwd, weight_file_name)
 
         model.load_state_dict(torch.load(file_path))
         print('loaded weights')
@@ -104,23 +104,28 @@ def train_and_evaluate(model_class, X, Y, test_size=0.1, epochs=30,
     return trn_los, tst_los
 
 
-players = "MYVF.1evF.1e"   # choose on which player data to train the model
-games = 115000                # choose on data from how many to train the model
+players = "MYVFvFall"   # choose on which player data to train the model
+games = 187000                # choose on data from how many to train the model
 test_size = 0.1             # choose what percent of data is used in the test set
-epochs = 15                 # choose the number of epochs to train the model
-batch_size = 16              # choose the size of batches used in training
-learning_rate = 0.01        # choose the learning rate
-weight_decay = 1e-4         # choose the weight decay
+epochs = 20                 # choose the number of epochs to train the model
+batch_size = 32              # choose the size of batches used in training
+learning_rate = 0.0005        # choose the learning rate
+weight_decay = 1e-5         # choose the weight decay
 weights = None              # choose the weights to load in the model before the training
-# weights = 'MYVF.2evF.25e_11004_b16_lr0.001_weights_epoch10.pth'
+# weights = "MYVF.1evF.1e_115000_b16_lr0.01_weights_epoch7.pth"
 
 
-# X_data, Y_data = combine_datasets("MYVF.2evF.2e", 12000)
-# X_data, Y_data = combine_datasets("MYVF.25evF.25e", 500)
 X_data, Y_data = combine_datasets("MYVF.1evF.1e", 115000)
+# X_data, Y_data = combine_datasets("MYVF.25evF.25e", 500)
+# X_data, Y_data = combine_datasets(players, games)
 
-# X_data2, Y_data2 = combine_datasets("MYVF.25evF.25e", 6001)
-# X_data, Y_data = combine_two_datasets(X_data, Y_data, X_data2, Y_data2)
+X_data2, Y_data2 = combine_datasets("MYVFvF", 60000)
+X_data, Y_data = combine_two_datasets(X_data, Y_data, X_data2, Y_data2)
+
+
+X_data2, Y_data2 = combine_datasets("MYVF.2evF.2e", 12000)
+X_data, Y_data = combine_two_datasets(X_data, Y_data, X_data2, Y_data2)
+
 
 # # Train and evaluate the model using 80% for training and 20% for testing
 train_losses, test_losses = train_and_evaluate(Net, X_data,

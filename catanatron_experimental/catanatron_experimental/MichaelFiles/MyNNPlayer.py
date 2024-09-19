@@ -29,7 +29,8 @@ class MyNNPlayer(Player):
         # weight_file_name = f'NN2vNN2_47K_b16_lr005_model_weights_epoch19.pth' # is the best model we found so far
         weight_file_name = 'catanatron_experimental/catanatron_experimental/MichaelFiles/model_weights/'
         # weight_file_name += "MYVF.1evF.1e_115000_b8_lr0.001_weights_epoch12.pth"
-        weight_file_name += "MYVF.1evF.1e_115000_b16_lr0.01_weights_epoch7.pth"
+        # weight_file_name += "MYVF.1evF.1e_115000_b16_lr0.01_weights_epoch7.pth"
+        weight_file_name += "MYVFvF_60000_b32_lr0.001_weights_epoch5.pth"
         # Join the directory with the file name
         file_path = os.path.join(cwd, weight_file_name)
 

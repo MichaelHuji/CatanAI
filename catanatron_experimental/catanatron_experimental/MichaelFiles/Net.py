@@ -19,8 +19,8 @@ class Net(nn.Module):
         self.output = nn.Linear(8, 1)
 
         self.sigmoid = nn.Sigmoid()
-        self.dropout = nn.Dropout(0.1)  # Optional dropout for regularization
-        self.dropout2 = nn.Dropout(0.2)  # Optional dropout for regularization
+        self.dropout = nn.Dropout(0.5)  # Optional dropout for regularization
+        self.dropout2 = nn.Dropout(0.5)  # Optional dropout for regularization
 
     # def forward(self, x):
     #     x = torch.relu(self.fc1(x))
