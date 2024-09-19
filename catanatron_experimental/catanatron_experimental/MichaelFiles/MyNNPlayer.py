@@ -65,4 +65,3 @@ class MyNNPlayer(Player):
                 best_actions = [action]
 
         return random.choice(best_actions)
-

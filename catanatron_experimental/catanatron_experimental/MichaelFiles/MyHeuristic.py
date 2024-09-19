@@ -3,7 +3,7 @@ from catanatron.game import Game
 from catanatron import Player
 # from catanatron_experimental.cli.cli_players import register_player
 from catanatron_experimental.MichaelFiles.HeuristicFeatures import simple_reward
-
+from catanatron.models.enums import ActionType
 from catanatron_gym.envs.catanatron_env import from_action_space
 
 # @register_player("MYVF")
@@ -23,6 +23,7 @@ class MyVFPlayer(Player):
         best_value = float("-inf")
         best_actions = []
         for action in playable_actions:
+
             game_copy = game.copy()
             if isinstance(action, int):
                 catan_action = from_action_space(action, game.state.playable_actions)
