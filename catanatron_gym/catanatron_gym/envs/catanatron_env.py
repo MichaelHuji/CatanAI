@@ -192,7 +192,7 @@ class CatanatronEnv(gym.Env):
 
         # self.enemies = self.config.get("enemies", [RandomPlayer(Color.RED)])
         # self.enemies = self.config.get("enemies", [WeightedRandomPlayer(Color.RED)])
-        self.enemies = self.config.get("enemies", [ValueFunctionPlayer(Color.RED, epsilon=0.1)])
+        self.enemies = self.config.get("enemies", [ValueFunctionPlayer(Color.RED)])
         # self.enemies = self.config.get("enemies", [AlphaBetaPlayer(Color.RED)])
         # self.enemies = self.config.get("enemies", [MyNNPlayer(Color.RED)])
         self.X_1VP = np.zeros(477)

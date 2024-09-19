@@ -34,6 +34,7 @@ from catanatron_experimental.MichaelFiles.MyNNPlayer import MyNNPlayer
 
 from catanatron_experimental.MichaelFiles.MyABPlayer import MyABPlayer
 
+from catanatron_experimental.MichaelFiles.MyRuleBasedPlayer import MyRBPlayer
 
 # ............. above import added by michael ..................
 
@@ -123,6 +124,12 @@ CLI_PLAYERS = [
         "AlphaBetaPlayer with hand crafted features and weights",
         "like MYVF but looks deeper",
         MyABPlayer,
+    ),
+    CliPlayer(
+        "MYRB",
+        "AlphaBetaPlayer with hand crafted features and weights",
+        "like MYVF but looks deeper",
+        MyRBPlayer,
     ),
 ]
 

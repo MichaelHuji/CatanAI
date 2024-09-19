@@ -518,3 +518,99 @@ def calc_missing_resources_for_city(state, p_key):
 
     return missing_cards
 
+
+def calc_node_value(game, node_id, p0_color):
+
+    board = game.state.board
+    catan_map = board.map
+
+    # the probabilities for 6, 8 are not 5 because they have a higher chance to get blocked
+    prob_dict = {2: 1, 3: 1.95, 4: 2.85, 5: 3.7, 6: 4.5, 7: 0, 8: 4.5, 9: 3.7, 10: 2.85, 11: 1.95, 12: 1}
+    resource_dict = {"WOOD": 0, "BRICK": 1, "SHEEP": 2, "WHEAT": 3, "ORE": 4}
+    p0_total_payout = [0, 0, 0, 0, 0]
+
+    for number, prob in prob_dict.items():
+        payout = calculate_resource_production_for_number(board, number)
+        if p0_color in payout.keys():
+            p0_payout = payout[p0_color]
+        else:
+            p0_payout = [0, 0, 0, 0, 0]
+        for i, amount in enumerate(p0_payout):
+            if amount == 0:
+                continue
+            p0_total_payout[i] += (amount * prob)
+
+    for tile in catan_map.adjacent_tiles[node_id]:
+        # tile_resource = resource_dict.get(tile.resource, -1)
+        # if tile_resource == 2:
+        #     p0_total_payout[2] -= 0.1
+        # if tile_resource == 3:
+        #     p0_total_payout[3] += 0.1
+
+        p0_total_payout[resource_dict.get(tile.resource, 0)] += prob_dict.get(tile.number, 0)
+
+    production_value = 0
+    for p_val in p0_total_payout:
+        if p_val <= 0:
+            production_value -= 3.6  # penalty for lack of resource diversity
+        else:
+            production_value += p_val
+
+    return production_value
+
+
+def calc_road_value_for_player(game, node_pair, p0_color):
+    p0_expandable_nodes = get_player_expandable_nodes(game, p0_color)
+    board = game.state.board
+    board_buildable_ids = board.board_buildable_ids
+    distances = get_node_distances()
+    if (node_pair[0] in p0_expandable_nodes) and (node_pair[1] in p0_expandable_nodes):
+        # we connect 2 roads, it's not that good, unless we want to get the longest path
+        return 1
+
+    elif (node_pair[0] in p0_expandable_nodes) and (node_pair[1] not in p0_expandable_nodes):
+        # we build to a new location node_pair[1]
+        # check if we can build in this new location
+
+        if node_pair[1] in board_buildable_ids:   # if we can: check the value of that location
+            return 20 + calc_node_value(game, node_pair[1], p0_color)
+        else:   # if we can't, check if we can build in any of his neighbors
+            value = 0
+            for buildable_node in board_buildable_ids:  # if we can, check the value of the neighbors
+                if buildable_node not in p0_expandable_nodes and distances[buildable_node][node_pair[1]] <= 1.5:
+                    value = max(value, calc_node_value(game, buildable_node, p0_color))
+            return value
+
+    elif (node_pair[0] not in p0_expandable_nodes) and (node_pair[1] in p0_expandable_nodes):
+        # check if we can build in this new location
+        if node_pair[0] in board_buildable_ids:  # if we can: check the value of that location
+            return 20 + calc_node_value(game, node_pair[1], p0_color)
+        else:  # if we can't, check if we can build in any of his neighbors
+            value = 0
+            for buildable_node in board_buildable_ids:  # if we can, check the value of the neighbors
+                if buildable_node not in p0_expandable_nodes and distances[buildable_node][node_pair[0]] <= 1.5:
+                    value = max(value, calc_node_value(game, buildable_node, p0_color))
+            return value
+    return 1
+
+def calc_tile_value_for_player(game, tile_id, p1_color):
+    hex = game.state.board.map.land_tiles[tile_id]
+    prob_dict = {2: 0.5, 3: 1, 4: 2, 5: 3.5, 6: 5, 7: 0, 8: 5, 9: 3.5, 10: 2, 11: 1, 12: 0.5}
+    board = game.state.board
+    tile_number = hex.number
+    tile_value = 0
+    for node_id in hex.nodes.values():
+        building = board.buildings.get(node_id, None)
+        gain = 0
+        if building is None:
+            continue
+        elif building[1] == SETTLEMENT:
+            gain = 1
+        elif building[1] == CITY:   # city is worth more
+            gain = 2
+        if building[0] != p1_color: # if building is mine, give penalty
+            gain *= -2
+        tile_value += gain * (prob_dict[tile_number])
+
+    return tile_value
+
