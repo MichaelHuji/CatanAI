@@ -104,12 +104,12 @@ model = MyVFPlayer(Color.BLUE, epsilon=0.1)
 # env.enemies = [MyVFPlayer(Color.RED)]
 # env.players = [env.p0] + env.enemies
 
-num_games = 100
+num_games = 115000
 X_data, Y_data = simulate_games(env, model, num_games, "MYVF.1evF.1e")  # generate data for {episodes} games
 
 print(f"np.sum(Y_data) : {np.sum(Y_data)}")
 print(f"np.count_nonzero(Y_data) : {np.count_nonzero(Y_data)}")
-print(f"BLUE wins: {num_games-np.count_nonzero(1-Y_data)}")
-print(f"RED wins: {num_games-np.count_nonzero(Y_data)}")
+print(f"BLUE (MYVF 0.1 epsilon) wins: {num_games-np.count_nonzero(1-Y_data)}")
+print(f"RED (F 0.1 epsilon)  wins: {num_games-np.count_nonzero(Y_data)}")
 print(X_data.shape)
 # print(X_data)

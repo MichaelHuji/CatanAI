@@ -7,9 +7,11 @@ from catanatron import Player
 from catanatron_experimental.MichaelFiles.Net import Net
 from catanatron_experimental.MichaelFiles.Features import generate_x
 from catanatron_experimental.MichaelFiles.ActionsSpace import from_action_space
+import os
 
 # best_weights = f'NN2vNN2_47K_b16_lr005_model_weights_epoch19.pth'
-DEFAULT_WEIGHT='C:/Users/micha/PycharmProjects/catanProj/catanProj/catanatron_experimental/catanatron_experimental/MichaelFiles/model_weights/'
+# DEFAULT_WEIGHT='C:/Users/micha/PycharmProjects/catanProj/catanProj/catanatron_experimental/catanatron_experimental/MichaelFiles/model_weights/'
+# # DEFAULT_WEIGHT='./model_weights/'
 
 some_weight_file = 'MYVF.2evF.25e_11004_b16_lr0.001_weights_epoch7.pth'
 some_weight_file2 = 'MYVF.2evF.25e_11004_b16_lr0.001_weights_epoch10.pth'
@@ -21,8 +23,17 @@ class MyNNPlayer(Player):
 
         super().__init__(color, is_bot)
 
-        weight_file = "MYVF.2evF.25e_500_b50_lr0.0001_weights_epoch20.pth"
-        self.weights = DEFAULT_WEIGHT + weight_file
+        # Get current working directory
+        cwd = os.getcwd()
+
+        # weight_file_name = f'NN2vNN2_47K_b16_lr005_model_weights_epoch19.pth' # is the best model we found so far
+        weight_file_name = 'catanatron_experimental/catanatron_experimental/MichaelFiles/model_weights/'
+        # weight_file_name += "MYVF.1evF.1e_115000_b8_lr0.001_weights_epoch12.pth"
+        weight_file_name += "MYVF.1evF.1e_115000_b16_lr0.01_weights_epoch7.pth"
+        # Join the directory with the file name
+        file_path = os.path.join(cwd, weight_file_name)
+
+        self.weights = file_path
         self.model = Net()
         # f'NN2vNN2_47K_b16_lr005_model_weights_epoch19.pth' is the best model we found so far
         self.model.load_state_dict(torch.load(self.weights))
@@ -53,4 +64,3 @@ class MyNNPlayer(Player):
                 best_actions = [action]
 
         return random.choice(best_actions)
-
