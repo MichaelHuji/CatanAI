@@ -7,8 +7,8 @@ import numpy as np
 from tqdm import tqdm  # Import tqdm
 from catanatron_experimental.MichaelFiles.Net import Net
 from TrainNNhelpers import combine_datasets, combine_two_datasets
-DEFAULT_WEIGHT='C:/Users/micha/PycharmProjects/catanProj/catanProj/catanatron_experimental/catanatron_experimental/MichaelFiles/model_weights/'
-
+# DEFAULT_WEIGHT='C:/Users/micha/PycharmProjects/catanProj/catanProj/catanatron_experimental/catanatron_experimental/MichaelFiles/model_weights/'
+import os
 
 
 # Function to train the model
@@ -79,8 +79,19 @@ def train_and_evaluate(model_class, X, Y, test_size=0.1, epochs=30,
 
     if weights != None:
         # load pre-trained weights
-        weights = DEFAULT_WEIGHT + weights
-        model.load_state_dict(torch.load(weights))
+
+        # Get current working directory
+        cwd = os.getcwd()
+
+        # weight_file_name = f'NN2vNN2_47K_b16_lr005_model_weights_epoch19.pth' # is the best model we found so far
+        weight_file_name = 'catanatron_experimental/catanatron_experimental/MichaelFiles/model_weights/'
+
+        weight_file_name += weights
+        # Join the directory with the file name
+
+        file_path = os.path.join(cwd, weight_file_name)
+
+        model.load_state_dict(torch.load(file_path))
         print('loaded weights')
 
     optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
@@ -93,18 +104,20 @@ def train_and_evaluate(model_class, X, Y, test_size=0.1, epochs=30,
     return trn_los, tst_los
 
 
-players = "MYVF.2evF.25e"   # choose on which player data to train the model
-games = 500                # choose on data from how many to train the model
-test_size = 0.5             # choose what percent of data is used in the test set
-epochs = 20                 # choose the number of epochs to train the model
-batch_size = 50              # choose the size of batches used in training
-learning_rate = 0.0001        # choose the learning rate
-weight_decay = 1e-5         # choose the weight decay
-# weights = None              # choose the weights to load in the model before the training
-weights = 'MYVF.2evF.25e_11004_b16_lr0.001_weights_epoch10.pth'
+players = "MYVF.1evF.1e"   # choose on which player data to train the model
+games = 115000                # choose on data from how many to train the model
+test_size = 0.1             # choose what percent of data is used in the test set
+epochs = 15                 # choose the number of epochs to train the model
+batch_size = 16              # choose the size of batches used in training
+learning_rate = 0.01        # choose the learning rate
+weight_decay = 1e-4         # choose the weight decay
+weights = None              # choose the weights to load in the model before the training
+# weights = 'MYVF.2evF.25e_11004_b16_lr0.001_weights_epoch10.pth'
+
 
 # X_data, Y_data = combine_datasets("MYVF.2evF.2e", 12000)
-X_data, Y_data = combine_datasets("MYVF.25evF.25e", 500)
+# X_data, Y_data = combine_datasets("MYVF.25evF.25e", 500)
+X_data, Y_data = combine_datasets("MYVF.1evF.1e", 115000)
 
 # X_data2, Y_data2 = combine_datasets("MYVF.25evF.25e", 6001)
 # X_data, Y_data = combine_two_datasets(X_data, Y_data, X_data2, Y_data2)
@@ -119,19 +132,10 @@ train_losses, test_losses = train_and_evaluate(Net, X_data,
                                                batch_size=batch_size,
                                                lr=learning_rate,
                                                weight_decay = weight_decay,
-                                               weights=weights,
+                                               weights=weights
                                                )
 
 plot_losses(train_losses, test_losses, plrs=players,
             gms=games, tst=test_size,
             btch=batch_size, lr=learning_rate, wght=weight_decay)
 
-
-
-# filename = 'C:/Users/micha/PycharmProjects/catanProj/catanProj/catanatron_experimental/catanatron_experimental/MichaelFiles/game_simulation_data/'
-#
-# filename += 'MYVF.25evF.25e_4_500games_477features.npz'
-# data = np.load(filename)
-# X = data['X']
-# Y = data['Y']
-# print(X[:, -1])
