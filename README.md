@@ -5,7 +5,35 @@ For the project we use Bryan Collazo's implementation of catan, which can be fou
 https://github.com/bcollazo/catanatron
 
 
-To run our project with our agents:
+## Our Files
+
+Our Files Can be found at 
+ catanProj/catanatron_experimental/catanatron_experimental/MichaelFiles
+
+- MyHeuristic.py  - implementations of our heuristic agent
+
+- HeuristicFeatures.py - helper functions for our heuristic player
+
+- MyNNPlayer.py - implementations of our NN agent
+
+- Net.py - implementations of the NN we used for MyNNPlayer
+
+- TrainNN.py - the code we used to train the NN agent
+
+- TrainNNHelpers.py - helper functions for TrainNN
+
+- Feaatures.py - features used by the NN agent
+
+- GenerateGameData.py - code used to generate data for supervised learning
+
+- model_weights - directory containing the weights for the NN agent
+
+--
+
+--
+
+
+Instructions to run our project with our agents:
 
 ## Installation
 
