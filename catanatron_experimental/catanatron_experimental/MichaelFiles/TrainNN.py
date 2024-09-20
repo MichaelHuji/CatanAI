@@ -6,8 +6,8 @@ from sklearn.model_selection import train_test_split
 import numpy as np
 from tqdm import tqdm  # Import tqdm
 from catanatron_experimental.MichaelFiles.Net import Net
-from TrainNNhelpers import combine_datasets, combine_two_datasets
-# DEFAULT_WEIGHT='C:/Users/micha/PycharmProjects/catanProj/catanProj/catanatron_experimental/catanatron_experimental/MichaelFiles/model_weights/'
+from TrainNNhelpers import (combine_datasets, combine_two_datasets, get_22_datasets, get_turn10_datasets,
+                            get_1_datasets, get_turn20_datasets, get_turn30_datasets, load_numpy_data)
 import os
 
 
@@ -50,7 +50,7 @@ def train_model(model, train_loader, test_loader, criterion, optimizer, epochs,
         print(f"Epoch [{epoch + 1}/{epochs}], Validation Loss: {test_loss / test_size}, test size: {test_size}")
         test_losses.append(test_loss / test_size)
 
-        torch.save(model.state_dict(), f'model_weights/{plrs}_{gms}_b{btch}_lr{lr}_weights_epoch{epoch+1}.pth')
+        torch.save(model.state_dict(), f'model_weights/{plrs}_{gms}_b{btch}_lr{lr}_363features_weights_epoch{epoch+1}.pth')
 
     return train_losses, test_losses
 
@@ -80,22 +80,12 @@ def train_and_evaluate(model_class, X, Y, test_size=0.1, epochs=30,
     if weights != None:
         # load pre-trained weights
 
-        # Get current working directory
-        # cwd = os.getcwd()
-
-        # weight_file_name = f'NN2vNN2_47K_b16_lr005_model_weights_epoch19.pth' # is the best model we found so far
-        # weight_file_name = 'catanatron_experimental/catanatron_experimental/MichaelFiles/model_weights/'
-
         file_path = 'model_weights/' + weights
-        # Join the directory with the file name
-
-        # file_path = os.path.join(cwd, weight_file_name)
 
         model.load_state_dict(torch.load(file_path))
         print('loaded weights')
 
     optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
-    # TODO: add scheduler for learning rate
     criterion = nn.BCELoss()  # Binary Cross-Entropy Loss
 
     trn_los, tst_los = train_model(model, train_loader, test_loader, criterion, optimizer, epochs,
@@ -104,28 +94,21 @@ def train_and_evaluate(model_class, X, Y, test_size=0.1, epochs=30,
     return trn_los, tst_los
 
 
-players = "MYVFvFall"   # choose on which player data to train the model
-games = 187000                # choose on data from how many to train the model
+players = "AB_turn30"   # choose on which player data to train the model
+# games = 3850                # choose on data from how many to train the model
 test_size = 0.1             # choose what percent of data is used in the test set
-epochs = 20                 # choose the number of epochs to train the model
-batch_size = 32              # choose the size of batches used in training
-learning_rate = 0.0005        # choose the learning rate
+epochs = 30                 # choose the number of epochs to train the model
+batch_size = 8              # choose the size of batches used in training
+learning_rate = 0.00001        # choose the learning rate
 weight_decay = 1e-5         # choose the weight decay
 weights = None              # choose the weights to load in the model before the training
-# weights = "MYVF.1evF.1e_115000_b16_lr0.01_weights_epoch7.pth"
+# weights = "WvW_turn30_61000_b32_lr0.01_363features_weights_epoch10.pth"
 
-
-X_data, Y_data = combine_datasets("MYVF.1evF.1e", 115000)
-# X_data, Y_data = combine_datasets("MYVF.25evF.25e", 500)
-# X_data, Y_data = combine_datasets(players, games)
-
-X_data2, Y_data2 = combine_datasets("MYVFvF", 60000)
-X_data, Y_data = combine_two_datasets(X_data, Y_data, X_data2, Y_data2)
-
-
-X_data2, Y_data2 = combine_datasets("MYVF.2evF.2e", 12000)
-X_data, Y_data = combine_two_datasets(X_data, Y_data, X_data2, Y_data2)
-
+# X_data, Y_data = get_22_datasets()
+# X_data, Y_data = get_turn10_datasets()
+# X_data, Y_data = get_turn20_datasets()
+X_data, Y_data = get_turn30_datasets()
+games = len(Y_data)
 
 # # Train and evaluate the model using 80% for training and 20% for testing
 train_losses, test_losses = train_and_evaluate(Net, X_data,

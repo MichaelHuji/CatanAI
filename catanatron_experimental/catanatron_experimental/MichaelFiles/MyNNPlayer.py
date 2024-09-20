@@ -9,12 +9,7 @@ from catanatron_experimental.MichaelFiles.Features import generate_x
 from catanatron_experimental.MichaelFiles.ActionsSpace import from_action_space
 import os
 
-# best_weights = f'NN2vNN2_47K_b16_lr005_model_weights_epoch19.pth'
-# DEFAULT_WEIGHT='C:/Users/micha/PycharmProjects/catanProj/catanProj/catanatron_experimental/catanatron_experimental/MichaelFiles/model_weights/'
-# # DEFAULT_WEIGHT='./model_weights/'
 
-some_weight_file = 'MYVF.2evF.25e_11004_b16_lr0.001_weights_epoch7.pth'
-some_weight_file2 = 'MYVF.2evF.25e_11004_b16_lr0.001_weights_epoch10.pth'
 # @register_player("NN")
 class MyNNPlayer(Player):
     """Simple AI player that always takes the first action in the list of playable_actions"""
@@ -23,22 +18,35 @@ class MyNNPlayer(Player):
 
         super().__init__(color, is_bot)
 
-        # Get current working directory
-        cwd = os.getcwd()
+        # # Get current working directory
+        # cwd = os.getcwd()
 
-        # weight_file_name = f'NN2vNN2_47K_b16_lr005_model_weights_epoch19.pth' # is the best model we found so far
         weight_file_name = 'catanatron_experimental/catanatron_experimental/MichaelFiles/model_weights/'
-        # weight_file_name += "MYVF.1evF.1e_115000_b8_lr0.001_weights_epoch12.pth"
-        # weight_file_name += "MYVF.1evF.1e_115000_b16_lr0.01_weights_epoch7.pth"
-        weight_file_name += "MYVFvF_60000_b32_lr0.001_weights_epoch5.pth"
-        # Join the directory with the file name
-        file_path = os.path.join(cwd, weight_file_name)
 
-        self.weights = file_path
-        self.model = Net()
-        # f'NN2vNN2_47K_b16_lr005_model_weights_epoch19.pth' is the best model we found so far
-        self.model.load_state_dict(torch.load(self.weights))
-        self.model.eval()
+        # weight_file_name0 = "best_model_weights_attempt2.pth"     # Best weights 20.9.2024 , 19:25
+        # self.model = Net()
+        # self.model.load_state_dict(torch.load(weight_file_name + weight_file_name0))
+
+
+        weight_file_name1 = "WvW_22_61000_b32_lr0.01_363features_weights_epoch5.pth"
+        self.model_early = Net()
+        self.model_early.load_state_dict(torch.load(weight_file_name + weight_file_name1))
+
+        weight_file_name2 = "WvW_turn10_61000_b32_lr0.01_363features_weights_epoch7.pth"
+        self.model_mid = Net()
+        self.model_mid.load_state_dict(torch.load(weight_file_name + weight_file_name2))
+
+        # weight_file_name3 = "WvW_turn20_61000_b32_lr0.01_363features_weights_epoch6.pth"
+        # weight_file_name3 = "FvF_turn20_132500_b16_lr0.005_363features_weights_epoch7.pth"
+        weight_file_name3 = "FvF_turn20_136350_b64_lr1e-05_363features_weights_epoch26.pth"
+        self.model_mid_late = Net()
+        self.model_mid_late.load_state_dict(torch.load(weight_file_name + weight_file_name3))
+
+        weight_file_name4 = "WvW_turn30_61000_b32_lr0.01_363features_weights_epoch10.pth"
+        self.model_late = Net()
+        self.model_late.load_state_dict(torch.load(weight_file_name + weight_file_name4))
+
+
 
     def decide(self, game: Game, playable_actions):
         if len(playable_actions) == 1:
@@ -46,18 +54,23 @@ class MyNNPlayer(Player):
 
         best_value = float("-inf")
         best_actions = []
+
+        # current_model = self.model
+        current_model = self.model_early
+        if game.state.num_turns > 3 and game.state.num_turns < 13:
+            current_model = self.model_mid
+        elif game.state.num_turns > 12 and game.state.num_turns < 22:
+            current_model = self.model_mid_late
+        elif game.state.num_turns >= 22:
+            current_model = self.model_late
+
         for action in playable_actions:
             game_copy = game.copy()
-            if isinstance(action, int):
-                catan_action = from_action_space(action, game.state.playable_actions)
-                game_copy.execute(catan_action)
-
-            else:
-                game_copy.execute(action)
+            game_copy.execute(action)
 
             action_vector = generate_x(game_copy, self.color)
 
-            action_value = self.model(torch.tensor(action_vector, dtype=torch.float32))
+            action_value = current_model(torch.tensor(action_vector, dtype=torch.float32))
             if action_value == best_value:
                 best_actions.append(action)
             if action_value > best_value:

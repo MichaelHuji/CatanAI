@@ -90,26 +90,19 @@ env = gym.make("catanatron_gym:catanatron-v1")
 # env = CatanatronEnv()
 # model = RandomPlayer(Color.BLUE)
 # model = WeightedRandomPlayer(Color.BLUE)
-# model = ValueFunctionPlayer(Color.BLUE, epsilon=0.15)
+# model = ValueFunctionPlayer(Color.BLUE, epsilon=0)
 # model = AlphaBetaPlayer(Color.BLUE)
 # model = MyNNPlayer(Color.BLUE)
-model = MyVFPlayer(Color.BLUE)
+model = MyVFPlayer(Color.BLUE, epsilon=0)
 
 
-# env.enemies = [RandomPlayer(Color.RED)]
-# env.enemies = [WeightedRandomPlayer(Color.RED)]
-# env.enemies = [ValueFunctionPlayer(Color.RED)]
-# env.enemies = [AlphaBetaPlayer(Color.RED)]
-# env.enemies = [MyNNPlayer(Color.RED)]
-# env.enemies = [MyVFPlayer(Color.RED)]
-# env.players = [env.p0] + env.enemies
 
-num_games = 115000
+num_games = 118000
 X_data, Y_data = simulate_games(env, model, num_games, "MYVFvF")  # generate data for {episodes} games
 
 print(f"np.sum(Y_data) : {np.sum(Y_data)}")
 print(f"np.count_nonzero(Y_data) : {np.count_nonzero(Y_data)}")
-print(f"BLUE (MYVF 0.1 epsilon) wins: {num_games-np.count_nonzero(1-Y_data)}")
-print(f"RED (F 0.1 epsilon)  wins: {num_games-np.count_nonzero(Y_data)}")
+print(f"BLUE wins: {num_games-np.count_nonzero(1-Y_data)}")
+print(f"RED wins: {num_games-np.count_nonzero(Y_data)}")
 print(X_data.shape)
 # print(X_data)

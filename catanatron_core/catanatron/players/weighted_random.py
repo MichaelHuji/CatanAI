@@ -140,13 +140,13 @@ class WeightedRandomPlayer(Player):
     #             best_value = value
     #             best_actions = [action]
 
-        bloated_actions = []
-        for action in best_actions:
-            if isinstance(action, int):
-                catan_action = from_action_space(action, game.state.playable_actions)
-                weight = WEIGHTS_BY_ACTION_TYPE.get(catan_action.action_type, 1)
-            else:
-                weight = WEIGHTS_BY_ACTION_TYPE.get(action.action_type, 1)
-            bloated_actions.extend([action] * weight)
-
-        return random.choice(bloated_actions)
+        # bloated_actions = []
+        # for action in best_actions:
+        #     if isinstance(action, int):
+        #         catan_action = from_action_space(action, game.state.playable_actions)
+        #         weight = WEIGHTS_BY_ACTION_TYPE.get(catan_action.action_type, 1)
+        #     else:
+        #         weight = WEIGHTS_BY_ACTION_TYPE.get(action.action_type, 1)
+        #     bloated_actions.extend([action] * weight)
+        #
+        # return random.choice(bloated_actions)
