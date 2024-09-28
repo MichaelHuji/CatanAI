@@ -4,7 +4,17 @@ from catanatron import Player
 # from catanatron_experimental.cli.cli_players import register_player
 from catanatron_experimental.MichaelFiles.HeuristicFeatures import simple_reward
 from catanatron.models.enums import ActionType
-from catanatron_gym.envs.catanatron_env import from_action_space
+# from catanatron_gym.envs.catanatron_env import from_action_space
+from catanatron_experimental.MichaelFiles.ActionsSpace import (to_action_space, from_action_space,
+                                                               ACTION_SPACE_SIZE, ACTIONS_ARRAY, ACTION_TYPES)
+
+
+WEIGHTS_BY_ACTION_TYPE = {
+    ActionType.BUILD_CITY: 10000,
+    ActionType.BUILD_SETTLEMENT: 1000,
+    ActionType.BUY_DEVELOPMENT_CARD: 100,
+}
+
 
 # @register_player("MYVF")
 class MyVFPlayer(Player):
@@ -18,7 +28,16 @@ class MyVFPlayer(Player):
 
             # for exploration
         if self.epsilon is not None and random.random() < self.epsilon:
-            return random.choice(playable_actions)
+
+            bloated_actions = []
+            for action in playable_actions:
+                if isinstance(action, int):
+                    action = from_action_space(action, game.state.playable_actions)
+
+                weight = WEIGHTS_BY_ACTION_TYPE.get(action.action_type, 1)
+                bloated_actions.extend([action] * weight)
+
+            return random.choice(bloated_actions)
 
         best_value = float("-inf")
         best_actions = []

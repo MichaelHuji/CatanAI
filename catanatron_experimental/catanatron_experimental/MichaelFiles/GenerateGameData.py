@@ -31,13 +31,13 @@ def simulate_games(env, model, episodes, players):
         observation, info = env.reset()
         done = False
 
-        X1 = np.zeros(477)
-        X2 = np.zeros(477)
-        X4 = np.zeros(477)
-        X6 = np.zeros(477)
-        X8 = np.zeros(477)
-        X9 = np.zeros(477)
-        Y = 0
+        X1 = np.zeros(5)
+        X2 = np.zeros(5)
+        X4 = np.zeros(5)
+        X6 = np.zeros(5)
+        X8 = np.zeros(5)
+        X9 = np.zeros(5)
+        Y = -1
         while not done:
 
             action = model.decide(env.game, env.get_valid_actions())
@@ -52,14 +52,6 @@ def simulate_games(env, model, episodes, players):
             X9 = info['x9']
             Y = info['y']
 
-        # normalize the turn feature
-        num_turns = env.game.state.num_turns + 1
-        X1[476] /= num_turns
-        X2[476] /= num_turns
-        X4[476] /= num_turns
-        X6[476] /= num_turns
-        X8[476] /= num_turns
-        X9[476] /= num_turns
         X1_data.append(X1)
         X2_data.append(X2)
         X4_data.append(X4)
@@ -69,20 +61,17 @@ def simulate_games(env, model, episodes, players):
 
         Y_data.append(Y)
 
-    # print(X1_data)
-    # print(Y_data)
-    # print(np.array(X9_data)[300:500, 476])
-    np.savez(f"game_simulation_data/{players}_1_{episodes}games_485features.npz", X=np.array(X1_data), Y=np.array(Y_data))
+    np.savez(f"game_simulation_data/{players}_1_{episodes}games_91features.npz", X=np.array(X1_data), Y=np.array(Y_data))
 
-    np.savez(f"game_simulation_data/{players}_2_{episodes}games_485features.npz", X=np.array(X2_data), Y=np.array(Y_data))
+    np.savez(f"game_simulation_data/{players}_2_{episodes}games_91features.npz", X=np.array(X2_data), Y=np.array(Y_data))
 
-    np.savez(f"game_simulation_data/{players}_4_{episodes}games_485features.npz", X=np.array(X4_data), Y=np.array(Y_data))
+    np.savez(f"game_simulation_data/{players}_3_{episodes}games_91features.npz", X=np.array(X8_data), Y=np.array(Y_data))
 
-    np.savez(f"game_simulation_data/{players}_6_{episodes}games_485features.npz", X=np.array(X6_data), Y=np.array(Y_data))
+    np.savez(f"game_simulation_data/{players}_4_{episodes}games_91features.npz", X=np.array(X4_data), Y=np.array(Y_data))
 
-    np.savez(f"game_simulation_data/{players}_8_{episodes}games_485features.npz", X=np.array(X8_data), Y=np.array(Y_data))
+    np.savez(f"game_simulation_data/{players}_5_{episodes}games_91features.npz", X=np.array(X9_data), Y=np.array(Y_data))
 
-    np.savez(f"game_simulation_data/{players}_9_{episodes}games_485features.npz", X=np.array(X9_data), Y=np.array(Y_data))
+    np.savez(f"game_simulation_data/{players}_6_{episodes}games_91features.npz", X=np.array(X6_data), Y=np.array(Y_data))
 
     return np.array(X9_data), np.array(Y_data)
 
@@ -90,15 +79,17 @@ env = gym.make("catanatron_gym:catanatron-v1")
 # env = CatanatronEnv()
 # model = RandomPlayer(Color.BLUE)
 # model = WeightedRandomPlayer(Color.BLUE)
-# model = ValueFunctionPlayer(Color.BLUE, epsilon=0)
+model = ValueFunctionPlayer(Color.BLUE, epsilon=0)
 # model = AlphaBetaPlayer(Color.BLUE)
 # model = MyNNPlayer(Color.BLUE)
-model = MyVFPlayer(Color.BLUE, epsilon=0)
+# model = MyVFPlayer(Color.BLUE, epsilon=0.5)
 
 
 
-num_games = 118000
-X_data, Y_data = simulate_games(env, model, num_games, "MYVFvF")  # generate data for {episodes} games
+num_games = 31000
+X_data, Y_data = simulate_games(env, model, num_games, "FvF")  # generate data for {episodes} games
+
+
 
 print(f"np.sum(Y_data) : {np.sum(Y_data)}")
 print(f"np.count_nonzero(Y_data) : {np.count_nonzero(Y_data)}")
@@ -106,3 +97,7 @@ print(f"BLUE wins: {num_games-np.count_nonzero(1-Y_data)}")
 print(f"RED wins: {num_games-np.count_nonzero(Y_data)}")
 print(X_data.shape)
 # print(X_data)
+
+print(f"np.min(Y_data) = {np.min(Y_data)}")
+# print(f"np.min(X_data[:, 362]) = {np.min(X_data[:, 362])}")
+# print(f"np.max(X_data[:, 362]) = {np.max(X_data[:, 362])}")

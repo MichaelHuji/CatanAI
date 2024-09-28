@@ -32,6 +32,8 @@ from catanatron_experimental.MichaelFiles.MyHeuristic import MyVFPlayer
 
 from catanatron_experimental.MichaelFiles.MyNNPlayer import MyNNPlayer
 
+from catanatron_experimental.MichaelFiles.MyNN91 import MyNN91
+
 from catanatron_experimental.MichaelFiles.MyABPlayer import MyABPlayer
 
 from catanatron_experimental.MichaelFiles.MyRuleBasedPlayer import MyRBPlayer
@@ -127,9 +129,15 @@ CLI_PLAYERS = [
     ),
     CliPlayer(
         "MYRB",
-        "AlphaBetaPlayer with hand crafted features and weights",
-        "like MYVF but looks deeper",
+        "Rule base player",
+        "Rule base player",
         MyRBPlayer,
+    ),
+    CliPlayer(
+        "NN91",
+        "AlphaBetaPlayer with hand crafted features and weights",
+        "Single layer NN with 91 features",
+        MyNN91,
     ),
 ]
 

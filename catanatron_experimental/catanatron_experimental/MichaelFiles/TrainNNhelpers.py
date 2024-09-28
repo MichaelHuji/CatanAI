@@ -10,14 +10,15 @@ def load_numpy_data(filename):
 
 
 def plot_losses(trn_los, val_los, plrs="FvF", gms=114000, tst=0.1, btch=16, lr=0.001, wght=1e-5):
+
     epochs = range(1, len(trn_los) + 1)
     plt.plot(epochs, trn_los, label='Train Loss')
     plt.plot(epochs, val_los, label='Validation Loss')
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
     # plt.title('Training and Validation Loss')
-    plt.title(f'{plrs}_{gms}, test={tst}, \nbatch={btch}, lr={lr}, weight_dec={wght}')
-
+    # plt.title(f'{plrs}_{gms}, test={tst}, \nbatch={btch}, lr={lr}, weight_dec={wght}')
+    plt.title(f'{plrs}_{gms}')
     plt.legend()
     plt.show()
 
@@ -295,6 +296,5 @@ def combine_two_datasets(X_data1, Y_data1, X_data2, Y_data2):
 def remove_VP_feature(X_data):
     X_data = np.delete(X_data, 324, axis=1)
     return np.delete(X_data, 343, axis=1)
-
 
 

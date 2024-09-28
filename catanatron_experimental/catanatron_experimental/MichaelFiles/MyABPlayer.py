@@ -1,11 +1,15 @@
 import time
 import random
+import torch
+import torch.nn as nn
 from typing import Any
 from catanatron import Player
 from catanatron.game import Game
 from catanatron_experimental.MichaelFiles.HeuristicFeatures import simple_reward
 # from catanatron_experimental.cli.cli_players import register_player
 from catanatron_experimental.machine_learning.players.tree_search_utils import expand_spectrum, list_prunned_actions
+from catanatron_experimental.MichaelFiles.Net91 import Net91
+from catanatron_experimental.MichaelFiles.VF_weights_features import generate_feature_vector
 
 
 ALPHABETA_DEFAULT_DEPTH = 2
@@ -34,6 +38,12 @@ class MyABPlayer(Player):
         self.prunning = str(prunning).lower() != "false"
         self.use_value_function = None
         self.epsilon = epsilon
+
+        weight_file_path = 'catanatron_experimental/catanatron_experimental/MichaelFiles/model_weights/'
+        weight_file_name2 = "F5_4_50000_b32_lr0.01_91features_weights_epoch50.pth"  # 0.490 61% 8.67 7.27
+        self.model2 = Net75()
+        self.model2.load_state_dict(torch.load(weight_file_path + weight_file_name2))
+        self.model2.eval()
 
     def value_function(self, game, p0_color):
         raise NotImplementedError
@@ -78,8 +88,9 @@ class MyABPlayer(Player):
         {'value', 'action'|None if leaf, 'node' }
         """
         if depth == 0 or game.winning_color() is not None or time.time() >= deadline:
-            value = simple_reward(game, self.color)
-
+            # value = simple_reward(game, self.color)
+            action_vector = generate_feature_vector(game, self.color)
+            value = self.model2(torch.tensor(action_vector, dtype=torch.float32))
             node.expected_value = value
             return None, value
 

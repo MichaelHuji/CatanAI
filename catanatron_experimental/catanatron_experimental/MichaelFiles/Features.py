@@ -174,4 +174,3 @@ def get_node_production(catan_map, node_id, resource):
 
 
 
-

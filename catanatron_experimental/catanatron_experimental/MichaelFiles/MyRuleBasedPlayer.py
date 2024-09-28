@@ -159,4 +159,3 @@ class MyRBPlayer(Player):
                 best_hex = hex_id
 
         return hex_ids[best_hex]
-

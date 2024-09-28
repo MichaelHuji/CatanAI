@@ -90,4 +90,3 @@ def from_action_space(action_int, playable_actions):
             break  # return the first one
     assert catan_action is not None
     return catan_action
-
