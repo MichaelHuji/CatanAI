@@ -41,7 +41,7 @@ class MyABPlayer(Player):
 
         weight_file_path = 'catanatron_experimental/catanatron_experimental/MichaelFiles/model_weights/'
         weight_file_name2 = "F5_4_50000_b32_lr0.01_91features_weights_epoch50.pth"  # 0.490 61% 8.67 7.27
-        self.model2 = Net75()
+        self.model2 = Net91()
         self.model2.load_state_dict(torch.load(weight_file_path + weight_file_name2))
         self.model2.eval()
 
