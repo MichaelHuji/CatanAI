@@ -22,19 +22,19 @@ class MyNN91(Player):
 
         weight_file_path = 'catanatron_experimental/catanatron_experimental/MichaelFiles/model_weights/'
 
-        weight_file_name1 = "F5_4_50000_b32_lr0.01_91features_weights_epoch30.pth"  # 0.491 64% 8.89 7.48 ****
+        weight_file_name1 = "F5_4_50000_b32_lr0.01_91features_weights_epoch30.pth"  # 0.
         
-        weight_file_name2 = "F5_4_50000_b32_lr0.01_91features_weights_epoch50.pth"  # 0.490 61% 8.67 7.27 ****
+        weight_file_name2 = "F5_4_50000_b32_lr0.01_91features_weights_epoch50.pth"  #
         
-        weight_file_name3 = "all_data_4_465000_b64_lr0.004_91features_weights_epoch75.pth"  # 58% 8.75 7.71  ***
+        weight_file_name3 = "all_data_4_465000_b64_lr0.004_91features_weights_epoch75.pth"  #
         
-        weight_file_name4 = "all_F_2and4_630000_b64_lr0.01_91features_weights_epoch60.pth"  # 59% 8.40 7.62 ***
+        weight_file_name4 = "all_F_2and4_630000_b64_lr0.01_91features_weights_epoch60.pth"  #
         
-        weight_file_name5 = "F1vF1_4_150000_b32_lr0.01_91features_weights_epoch69.pth"  # 61% 8.54 7.56    ****
+        weight_file_name5 = "F1vF1_4_150000_b32_lr0.01_91features_weights_epoch69.pth"  #
         
-        weight_file_name6 = "F5_6_with_pretrained_F5_4_50000_b64_lr0.0001_91features_weights_epoch6.pth"  # as late: 63% 8.64 7.31  ****
+        weight_file_name6 = "F5_6_with_pretrained_F5_4_50000_b64_lr0.0001_91features_weights_epoch6.pth"
         
-        weight_file_name7 = "F_4_with_pretrained_F5_4_105000_b128_lr1e-06_91features_weights_epoch1.pth"  # 61% 8.68 7.57  ****
+        weight_file_name7 = "F_4_with_pretrained_F5_4_105000_b128_lr1e-06_91features_weights_epoch1.pth"
 
         self.model1 = Net91()
         self.model1.load_state_dict(torch.load(weight_file_path + weight_file_name1))
