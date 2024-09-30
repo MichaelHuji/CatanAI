@@ -22,86 +22,19 @@ class MyNN91(Player):
 
         weight_file_path = 'catanatron_experimental/catanatron_experimental/MichaelFiles/model_weights/'
 
-        # weight_file_name = "FvF_4_50000_b32_lr0.01_91features_weights_epoch27.pth"  # 0.249  55% 8.23 7.91
-        # weight_file_name = "FvF_4_50000_b32_lr0.01_91features_weights_epoch45.pth"  # 0.249  54% 8.21 7.99
-
-
-        # weight_file_name = "F2vF2_4_50000_b32_lr0.001_91features_weights_epoch34.pth"  # 54% 8.06 7.70
-        # weight_file_name = "F2vF2_4_50000_b32_lr0.001_91features_weights_epoch35.pth"  # 59% 8.33 7.37
-
-        weight_file_name1 = "F5_4_50000_b32_lr0.01_91features_weights_epoch30.pth"  # 0.491 64% 8.89 7.48
-        # weight_file_name = "F5_4_50000_b32_lr0.01_91features_weights_epoch31.pth"  # 0.490 54% 8.16 7.74
-        # weight_file_name = "F5_4_50000_b32_lr0.01_91features_weights_epoch32.pth"  # 0.490 57% 8.50 7.40
-
-        # weight_file_name = "F5_4_50000_b32_lr0.01_91features_weights_epoch35.pth"  # 0.490 63% 8.77 7.19
-
-        weight_file_name2 = "F5_4_50000_b32_lr0.01_91features_weights_epoch50.pth"  # 0.490 61% 8.67 7.27
-
-
-
-        # weight_file_name6 = "F5_6_with_pretrained_F5_4_50000_b64_lr0.0001_91features_weights_epoch2.pth"  # as late:
-        # weight_file_name6 = "F5_6_with_pretrained_F5_4_50000_b64_lr0.0001_91features_weights_epoch3.pth"  # as late:
-        # weight_file_name6 = "F5_6_with_pretrained_F5_4_50000_b64_lr0.0001_91features_weights_epoch4.pth"  # as late: 52% 8.41 7.90
-        # weight_file_name6 = "F5_6_with_pretrained_F5_4_50000_b64_lr0.0001_91features_weights_epoch5.pth"  # as late: 62% 8.67 7.57  ****
-        weight_file_name6 = "F5_6_with_pretrained_F5_4_50000_b64_lr0.0001_91features_weights_epoch6.pth"  # as late: 63% 8.64 7.31  ****
-        # weight_file_name6 = "F5_6_with_pretrained_F5_4_50000_b64_lr0.0001_91features_weights_epoch7.pth"  # as late: 53% 8.50 7.85
-        # weight_file_name6 = "F5_6_with_pretrained_F5_4_50000_b64_lr0.0001_91features_weights_epoch10.pth"  # as late: 57%
-        # weight_file_name6 = "F5_6_with_pretrained_F5_4_50000_b64_lr0.0001_91features_weights_epoch20.pth"  # as late: 59% 8.21 7.32  ***
-        # weight_file_name6 = "F5_6_with_pretrained_F5_4_50000_b64_lr0.0001_91features_weights_epoch30.pth"  # as late: 59% 8.36 7.41  ***
-        # weight_file_name6 = "F5_6_with_pretrained_F5_4_50000_b64_lr0.0001_91features_weights_epoch40.pth"  # as late: 56% 8.35 7.47
-        # weight_file_name6 = "F5_6_with_pretrained_F5_4_50000_b64_lr0.0001_91features_weights_epoch50.pth"  # as late:
-
-
-        # weight_file_name = "F5vF5_4_50000_b32_lr0.001_91features_weights_epoch10.pth"  # 57% 8.41 7.71
-        # weight_file_name = "F5vF5_4_50000_b32_lr0.001_91features_weights_epoch35.pth"  # 53% 8.01 7.77
-        # weight_file_name_early = "F5_2_50000_b32_lr0.01_91features_weights_epoch30.pth"  # with late: 57% 8.53 7.54
-
-        # weight_file_name_early = "F5_2_50000_b32_lr0.01_91features_weights_epoch50.pth"  # with late: 58% 8.40 7.48
-
-        # weight_file_name = "all_data_4_465000_b64_lr0.004_91features_weights_epoch38.pth"  # 57% 8.46 7.68  ****
-        # weight_file_name = "all_data_4_465000_b64_lr0.004_91features_weights_epoch39.pth"  # 57% 8.66 7.76  ****
-        # weight_file_name = "all_data_4_465000_b64_lr0.004_91features_weights_epoch40.pth"  # 56% 8.15 7.40  ***
-        # weight_file_name = "all_data_4_465000_b64_lr0.004_91features_weights_epoch41.pth"  # 55% 8.28 7.65  ***
-        # weight_file_name = "all_data_4_465000_b64_lr0.004_91features_weights_epoch42.pth"  # 58% 8.58 7.32  ****
-        # weight_file_name = "all_data_4_465000_b64_lr0.004_91features_weights_epoch43.pth"  # 55% 8.51 7.43  ***
-        # weight_file_name = "all_data_4_465000_b64_lr0.004_91features_weights_epoch45.pth"  # 54% 8.09 7.95  ***
-        weight_file_name3 = "all_data_4_465000_b64_lr0.004_91features_weights_epoch75.pth"  # 58% 8.75 7.71  ****
-        # weight_file_name = "all_data_4_465000_b64_lr0.004_91features_weights_epoch80.pth"  # 54% 8.20 7.49  **
-
-
-        # weight_file_name_late = "all_data_4_465000_b64_lr0.004_91features_weights_epoch42.pth"  # 58% 8.58 7.32  ****
-
-        # weight_file_name = "all_F_2and4_630000_b64_lr0.01_91features_weights_epoch40.pth"  # 55% 8.36 7.71
-        # weight_file_name = "all_F_2and4_630000_b64_lr0.01_91features_weights_epoch59.pth"  # 54% 8.02 7.69
-        weight_file_name4 = "all_F_2and4_630000_b64_lr0.01_91features_weights_epoch60.pth"  # 59% 8.40 7.62
-        # weight_file_name = "all_F_2and4_630000_b64_lr0.01_91features_weights_epoch62.pth"  # 54% 8.36 7.62
-
-
+        weight_file_name1 = "F5_4_50000_b32_lr0.01_91features_weights_epoch30.pth"  # 0.491 64% 8.89 7.48 ****
+        
+        weight_file_name2 = "F5_4_50000_b32_lr0.01_91features_weights_epoch50.pth"  # 0.490 61% 8.67 7.27 ****
+        
+        weight_file_name3 = "all_data_4_465000_b64_lr0.004_91features_weights_epoch75.pth"  # 58% 8.75 7.71  ***
+        
+        weight_file_name4 = "all_F_2and4_630000_b64_lr0.01_91features_weights_epoch60.pth"  # 59% 8.40 7.62 ***
+        
         weight_file_name5 = "F1vF1_4_150000_b32_lr0.01_91features_weights_epoch69.pth"  # 61% 8.54 7.56    ****
-        # weight_file_name = "F1vF1_4_150000_b32_lr0.01_91features_weights_epoch70.pth"  # 56% 8.20 7.86    **
-        # weight_file_name = "F1vF1_4_150000_b32_lr0.01_91features_weights_epoch71.pth"  # 58% 8.22 7.60    ***
-        # weight_file_name = "F1vF1_4_150000_b32_lr0.01_91features_weights_epoch80.pth"  # 57% 8.45 7.60    ***
-
-
-        # weight_file_name = "batch63_wd3_F1vF1_4_150000_b64_lr0.01_91features_weights_epoch65.pth"  # 58% 8.34 7.66  ***
-        # weight_file_name = "batch63_wd3_F1vF1_4_150000_b64_lr0.01_91features_weights_epoch76.pth"  # 57% 8.53 7.48  ***
-        # weight_file_name = "batch63_wd3_F1vF1_4_150000_b64_lr0.01_91features_weights_epoch78.pth"  # 58% 8.47 7.31  ***
-        # weight_file_name = "batch63_wd3_F1vF1_4_150000_b64_lr0.01_91features_weights_epoch79.pth"  # 57% 8.28 7.57  ***
-        # weight_file_name = "batch63_wd3_F1vF1_4_150000_b64_lr0.01_91features_weights_epoch80.pth"  # 57% 8.53 7.61  ***
-
-
-        # weight_file_name = "alldata_4_with_pretrainedF1_465000_b128_lr0.0001_91features_weights_epoch13.pth"  # 58% 8.40 7.52  ***
-        # weight_file_name = "alldata_4_with_pretrainedF1_465000_b128_lr0.0001_91features_weights_epoch25.pth"  # 58% 8.58 7.42  ***
-        # weight_file_name = "alldata_4_with_pretrainedF1_465000_b128_lr0.0001_91features_weights_epoch28.pth"  # 59% 8.35 7.55  ***
-        #
-
+        
+        weight_file_name6 = "F5_6_with_pretrained_F5_4_50000_b64_lr0.0001_91features_weights_epoch6.pth"  # as late: 63% 8.64 7.31  ****
+        
         weight_file_name7 = "F_4_with_pretrained_F5_4_105000_b128_lr1e-06_91features_weights_epoch1.pth"  # 61% 8.68 7.57  ****
-        # weight_file_name7 = "F_4_with_pretrained_F5_4_105000_b128_lr1e-06_91features_weights_epoch30.pth"  # 57% 8.29 7.45  ***
-
-
-        # weight_file_name7 = "F5_4_with_pretrained_all_F_4_50000_b8_lr1e-06_91features_weights_epoch1.pth"  # 59% 8.39 7.57  ***
-        # weight_file_name7 = "F5_4_with_pretrained_all_F_4_50000_b8_lr1e-06_91features_weights_epoch50.pth"  # 56% 8.20 7.60  **
-
 
         self.model1 = Net91()
         self.model1.load_state_dict(torch.load(weight_file_path + weight_file_name1))
@@ -155,16 +88,15 @@ class MyNN91(Player):
             game_copy.execute(action)
 
             action_vector = generate_feature_vector(game_copy, self.color)
-            # action_value = current_model(torch.tensor(action_vector, dtype=torch.float32))
-
             action_value = 0
             # action_value += self.model1(torch.tensor(action_vector, dtype=torch.float32))
+            
             action_value += self.model2(torch.tensor(action_vector, dtype=torch.float32))
+            
             # action_value += self.model3(torch.tensor(action_vector, dtype=torch.float32))
             # action_value += self.model4(torch.tensor(action_vector, dtype=torch.float32))
             # action_value += self.model5(torch.tensor(action_vector, dtype=torch.float32))
             # action_value += self.model6(torch.tensor(action_vector, dtype=torch.float32))
-
             # action_value += self.model7(torch.tensor(action_vector, dtype=torch.float32))
 
             # if ((player_state[f"{p_key}_ACTUAL_VICTORY_POINTS"] >= 7) or
