@@ -61,6 +61,7 @@ pip install -r requirements.txt
 ## Usage
 
 Run simulations via the CLI:
+
 Our heuristic search agent against catanatron's weighted random player
 ```
 catanatron-play --players=W,MYVF --num=100
