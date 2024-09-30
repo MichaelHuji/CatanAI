@@ -40,27 +40,69 @@ Instructions to run our project with our agents:
 Clone this repository and install dependencies. This will include the Catanatron bot implementations and the `catanatron-play` simulator and our implementations for the heauristic agent and the NN agent.
 
 ```
-git clone https://github.com/MichaelHuji/catanProj
+git clone https://github.com/MichaelHuji/catanAI
 cd catanProj/
 ```
 
 Create a virtual environment with Python3.8 or higher. Then:
 
 ```
-pip install -r all-requirements.txt
+pip install -r requirements.txt
 ```
 
 ## Usage
 
-Run simulations and generate datasets via the CLI:
+Run simulations via the CLI:
+Our heuristic search agent against catanatron's weighted random player
+```
+catanatron-play --players=W,MYVF --num=100
+```
 
+Our heuristic search agent against catanatron's value function player
 ```
 catanatron-play --players=F,MYVF --num=100
 ```
 
+Our Deep NN against catanatron's weighted random player
 ```
-catanatron-play --players=M,NN --num=50
+catanatron-play --players=W,NN --num=100
 ```
+
+Our Deep NN against catanatron's value function player
+```
+catanatron-play --players=F,NN --num=100
+```
+
+Our single layer NN against catanatron's value function player
+```
+catanatron-play --players=F,NN91 --num=100
+```
+
+Our single layer NN against catanatron's Alpha-Beta
+```
+catanatron-play --players=AB,NN91 --num=50
+```
+
+Alpha-Beta with our single layer NN utility function against catanatron's Alpha-Beta
+```
+catanatron-play --players=AB,MYAB --num=50
+```
+
+2 of our single layer NN against catanatron's value function player
+```
+catanatron-play --players=F,NN91,NN91 --num=100
+```
+
+Our single layer NN against 3 of catanatron's value function player
+```
+catanatron-play --players=F,NN91,F,F --num=100
+```
+
+Our 3 agents against each other
+```
+catanatron-play --players=MYVF,NN91,NN --num=100
+```
+
 
 # Bot Legend
 
@@ -77,14 +119,20 @@ catanatron-play --players=M,NN --num=50
 - F  - Catanatron's Value Function Agent  -  wins against MCTS with close to 100%
 
 - AB - Catanatron's Value Function Agent  -  wins against F with about 60%
+  
 
 ### Our bots
 
-- MYVF - Our's Heuristic Agent  -  wins against F with about 50%, wins against AB with about 40%
+- MYVF - Our Heuristic Agent  -  wins against F with about 50%, wins against AB with about 40%
 
-- NN - Our's Neural Network Agent  -  wins against MCTS with about 80%, wins against F with about 7%
+- NN - Our Deep NN Agent  -  wins against MCTS with about 95%, wins against F with about 12%
+
+- NN91 - Our Single Layer NN Agent  -  wins against F with about 58%, wins against AB with about 55%
+ 
+- MYAB - Our Single Layer NN with depth 2 search  -  wins against F with about 80%, wins against AB with about 70%
 
 --
+
 
 --
 ## Help
