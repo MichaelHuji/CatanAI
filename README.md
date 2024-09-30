@@ -14,15 +14,23 @@ Our Files Can be found at
 
 - HeuristicFeatures.py - helper functions for our heuristic player
 
-- MyNNPlayer.py - implementations of our NN agent
+- MyNNPlayer.py - implementations of our Deep NN agent
 
 - Net.py - implementations of the NN we used for MyNNPlayer
 
-- TrainNN.py - the code we used to train the NN agent
+- TrainNN.py - the code we used to train the Deep NN agent
 
 - TrainNNHelpers.py - helper functions for TrainNN
 
-- Feaatures.py - features used by the NN agent
+- Features.py - features used by the NN agent
+
+- MyNN91.py - implementations of our single layer NN agent
+
+- Net91.py - implementations of the NN we used for NN91
+
+- TrainNN91.py - the code we used to train the single layer NN agent
+
+- VF_weights_features - helper functions for our single layer NN
 
 - GenerateGameData.py - code used to generate data for supervised learning
 
